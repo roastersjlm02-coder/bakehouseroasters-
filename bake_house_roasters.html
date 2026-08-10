@@ -356,6 +356,15 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
     </button>
     <div class="page-title" id="page-title">לוח בקרה</div>
   </div>
+  <!-- שורת חיפוש גלובלית -->
+  <div style="flex:1;max-width:320px;margin:0 16px;position:relative">
+    <input type="text" id="global-search" placeholder="🔍 חיפוש חופשי... (ביצים, קמח, עוגיות)"
+      oninput="globalSearch(this.value)"
+      style="width:100%;padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;font-family:'Heebo',sans-serif;font-size:13px;background:#fff;outline:none;transition:border-color .2s"
+      onfocus="this.style.borderColor='var(--brown)';document.getElementById('search-results').style.display='block'"
+      onblur="setTimeout(()=>document.getElementById('search-results').style.display='none',200)">
+    <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:320px;overflow-y:auto;z-index:500"></div>
+  </div>
   <div class="topbar-actions" id="topbar-actions">
     <span id="save-indicator" style="font-size:11px;color:var(--muted);transition:color .3s"></span>
     <button class="btn btn-secondary" onclick="exportData()" style="font-size:12px;padding:6px 12px" title="ייצא נתונים לקובץ">📤 ייצא</button>
@@ -1494,6 +1503,65 @@ function toggleSidebar() {
       spans[0].style.cssText='';spans[1].style.cssText='';spans[2].style.cssText='';
     }
   }
+}
+
+function globalSearch(query) {
+  const el = document.getElementById('search-results');
+  if(!query || query.length < 2) { el.innerHTML = ''; return; }
+  const q = query.toLowerCase();
+  const results = [];
+
+  // חפש בחומרי גלם
+  ingredients.forEach(i => {
+    if(i.name.includes(q) || (i.supplier&&i.supplier.toLowerCase().includes(q))) {
+      const statusColor = i.qty===null?'var(--muted)':i.min&&i.qty<i.min?'var(--red)':'var(--green)';
+      const qtyStr = i.qty!==null ? i.qty : 'לא הוזן';
+      results.push(`<div onclick="nav('ingredients',document.querySelector('[onclick*=ingredients]'));document.getElementById('global-search').value='';setTimeout(()=>{const rows=document.querySelectorAll('#ing-table tr');rows.forEach(r=>{if(r.textContent.includes('${i.name}'))r.style.background='#FFF8E1';})},300)"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"
+        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
+        <div>
+          <div style="font-size:13px;font-weight:700">${i.name}</div>
+          <div style="font-size:11px;color:var(--muted)">🌾 חומר גלם · ${i.supplier||''}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:${statusColor}">${qtyStr}</div>
+      </div>`);
+    }
+  });
+
+  // חפש במוצרים סופיים
+  finishedGoods.forEach(p => {
+    if(p.name.includes(q)) {
+      const total = p.boxes.reduce((s,b)=>s+(b.qty&&b.units?b.qty*b.units:b.qty||0),0);
+      results.push(`<div onclick="nav('finished',document.querySelector('[onclick*=finished]'));document.getElementById('global-search').value=''"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"
+        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
+        <div>
+          <div style="font-size:13px;font-weight:700">${p.name}</div>
+          <div style="font-size:11px;color:var(--muted)">📦 מוצר סופי · ${p.storage==='freezer'?'❄️ מקפיא':p.storage==='fridge'?'🧊 מקרר':'🏪 מחסן'}</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--brown)">${total>0?total+' יח׳':'—'}</div>
+      </div>`);
+    }
+  });
+
+  // חפש במתכונים
+  recipes.forEach(r => {
+    if(r.name.includes(q)) {
+      results.push(`<div onclick="nav('recipes',document.querySelector('[onclick*=recipes]'));document.getElementById('global-search').value=''"
+        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)"
+        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
+        <div style="font-size:13px;font-weight:700">${r.name}</div>
+        <div style="font-size:11px;color:var(--muted)">📋 מתכון</div>
+      </div>`);
+    }
+  });
+
+  if(!results.length) {
+    el.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:13px">לא נמצאו תוצאות</div>';
+  } else {
+    el.innerHTML = `<div style="padding:6px 14px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">${results.length} תוצאות</div>` + results.join('');
+  }
+  el.style.display = 'block';
 }
 
 function nav(page, el) {
