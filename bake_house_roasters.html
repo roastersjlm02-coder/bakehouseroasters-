@@ -276,6 +276,43 @@ tr:hover td{background:#FDF8F3;}
 </style>
 </head>
 <body>
+
+<!-- מסך כניסה -->
+<div id="login-gate" style="position:fixed;inset:0;background:#3E2723;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:30px">
+  <div style="font-size:32px;margin-bottom:8px">🥐</div>
+  <div style="color:#fff;font-size:22px;font-weight:900;margin-bottom:4px">Bake House Roasters</div>
+  <div style="color:rgba(255,255,255,.6);font-size:14px;margin-bottom:32px">מערכת ניהול פנימית</div>
+  <div style="width:100%;max-width:320px">
+    <input type="password" id="login-pw" placeholder="סיסמה"
+      style="width:100%;padding:14px;border-radius:10px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-family:'Heebo',sans-serif;font-size:16px;text-align:center;margin-bottom:12px;outline:none"
+      onkeydown="if(event.key==='Enter')checkPassword()">
+    <button onclick="checkPassword()"
+      style="width:100%;padding:14px;border-radius:10px;border:none;background:#F9A825;color:#3E2723;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer">
+      כניסה
+    </button>
+    <div id="login-error" style="color:#ff8a80;font-size:13px;text-align:center;margin-top:10px;display:none">
+      סיסמה שגויה — נסה שוב
+    </div>
+  </div>
+</div>
+<script>
+const APP_PASSWORD = 'bake2024';
+function checkPassword() {
+  const pw = document.getElementById('login-pw').value;
+  if(pw === APP_PASSWORD) {
+    document.getElementById('login-gate').style.display = 'none';
+    sessionStorage.setItem('bhr-auth','1');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pw').value = '';
+    document.getElementById('login-pw').focus();
+  }
+}
+if(sessionStorage.getItem('bhr-auth')==='1') {
+  document.getElementById('login-gate').style.display = 'none';
+}
+</script>
+
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="layout">
 
@@ -854,8 +891,8 @@ const BRANCHES = [
   {id:'modiin',name:'מודיעין',color:'#6A1B9A',days:'א׳ / ב׳',type:'frozen'},
 ];
 const ingredients = [
-  {id:1, name:'שמן קנולה',      pack:'בקבוק',               qty:null,min:12,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-12 ליטר',
-   units:[{label:'בקבוק',qty:null}]},
+  {id:1, name:'שמן קנולה',      pack:'בקבוק 750 מ"ל (ארגז 15)', qty:null,min:12,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-12 בקבוקים',
+   units:[{label:'ארגז',qty:15},{label:'בקבוק',qty:1}]},
   {id:2, name:'סוכר לבן',       pack:'שקית 1 ק"ג (ארגז 10)', qty:null,  min:20,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-2 ארגזים (20 שקיות)',
    units:[{label:'ארגז',qty:null},{label:'שקית',qty:null}]},
   {id:3, name:'סוכר חום כהה',   pack:'שק 25 ק"ג',            qty:null,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
@@ -1809,7 +1846,6 @@ function renderIngredients() {
       <td style="font-size:13px">${i.supplier}</td>
       <td>
         <button class="act-btn" onclick="editIng(${i.id})">עדכן מלאי</button>
-        <button class="act-btn" onclick="editIngDetails(${i.id})">✏️</button>
         <button class="act-btn danger" onclick="removeIngImg(${i.id})" title="מחק תמונה" ${imgSrc?'':'style="display:none"'} id="del-img-${i.id}">🗑</button>
       </td>
     </tr>`;
@@ -1896,6 +1932,7 @@ function editIng(id) {
     </div>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
+      <button class="btn btn-secondary" onclick="closeModal();editIngDetails(${id})" style="font-size:12px">✏️ ערוך פרטים</button>
       <button class="btn btn-primary" onclick="saveIng(${id})">שמור</button>
     </div>`;
   openModalEl();
@@ -2158,33 +2195,6 @@ function buildFgRow(p) {
   </tr>`;
 }
 
-  const boxHtml = fgFilterBox === 'all'
-    ? `<td colspan="2"><div style="display:flex;gap:16px;flex-wrap:wrap">${p.boxes.map((b,bi)=>{
-        const unitInfo = b.units ? `<span style="font-size:10px;color:var(--muted)">(${b.units} יח׳/קופסא)</span>` : '';
-        return `<div style="display:flex;align-items:center;gap:6px">
-          <span style="background:${b.type==='4L'?'#E8F5E9':b.type==='2L'?'var(--blue-light)':'#FAF5EE'};color:${b.type==='4L'?'var(--green)':b.type==='2L'?'var(--blue)':'var(--brown-mid)'};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${b.type}</span>
-          ${unitInfo}
-          <strong style="color:${b.qty!==null&&b.qty<=2?'var(--red)':'inherit'}">${b.qty!==null?b.qty:'—'}</strong>
-          ${b.qty!==null&&b.qty<=2?'<span style="font-size:10px;color:var(--red)">⚠</span>':''}
-          ${b.note?`<span style="font-size:10px;color:var(--muted)">${b.note}</span>`:''}
-        </div>`;
-      }).join('')}</div></td>`
-    : `<td>${p.boxes.filter(b=>b.type===fgFilterBox).map((b)=>`
-        <div style="display:flex;align-items:center;gap:6px">
-          <strong>${b.qty!==null?b.qty:'—'}</strong>
-        </div>`).join('')}</td><td></td>`;
-
-  // חישוב סה"כ יחידות
-  const totalUnits = p.boxes.reduce((sum, b) => {
-    if(!b.qty) return sum;
-    return sum + (b.units ? b.qty * b.units : b.qty);
-  }, 0);
-  // בנה תיאור לפי קופסאות
-  const boxSummary = p.boxes.filter(b=>b.qty).map(b => {
-    if(b.units) return `${b.qty} ${b.type==='בודדות'?'בודדות':'אריזות'} × ${b.units} יח׳`;
-    return `${b.qty} אריזות`;
-  }).join(' | ');
-  const totalStr = boxSummary
 
 function chFg(pid,bi,d){const p=finishedGoods.find(x=>x.id===pid);p.boxes[bi].qty=Math.max(0,(p.boxes[bi].qty||0)+d);renderFinished();}
 
