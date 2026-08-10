@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bake House — שליח</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--brown:#3E2723;--gold:#F9A825;--green:#2E7D32;--red:#C62828;--border:#E8DDD0;--bg:#FAF5EE;--white:#fff;--muted:#9E9E9E;--blue:#1565C0;}
+body{font-family:'Heebo',sans-serif;background:var(--bg);direction:rtl;min-height:100vh;}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* LOGIN SCREEN */
+.login-wrap{background:var(--brown);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:30px;}
+.login-logo{color:#fff;font-size:22px;font-weight:900;text-align:center;margin-bottom:8px;}
+.login-sub{color:rgba(255,255,255,.6);font-size:14px;text-align:center;margin-bottom:8px;}
+.login-btn{width:100%;max-width:320px;padding:18px 20px;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);border-radius:16px;color:#fff;font-family:'Heebo',sans-serif;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:16px;}
+.login-btn:active{background:rgba(255,255,255,.25);}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;flex-shrink:0;}
+
+/* TOPBAR */
+.topbar{background:var(--brown);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-logo{color:#fff;font-size:16px;font-weight:900;}
+.topbar-info{display:flex;align-items:center;gap:8px;}
+.user-tag{background:var(--gold);color:var(--brown);border-radius:20px;padding:4px 12px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'Heebo',sans-serif;}
+.branch-tag{background:rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:'Heebo',sans-serif;}
+
+/* TABS */
+.tab-bar{display:flex;background:var(--white);border-bottom:1px solid var(--border);}
+.tab{flex:1;padding:13px;text-align:center;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;}
+.tab.active{color:var(--brown);border-bottom-color:var(--brown);}
+
+/* PRODUCTS */
+.products-wrap{padding:8px 0;}
+.product-block{border:2px solid var(--border);border-radius:12px;margin:10px 14px;overflow:hidden;background:var(--white);}
+.product-block.selected{border-color:var(--brown);}
+.product-head{display:flex;align-items:center;gap:12px;padding:14px;}
+.product-head.selected-head{background:var(--brown);}
+.product-emoji{font-size:28px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:#FAF5EE;border-radius:10px;flex-shrink:0;}
+.product-name{font-size:14px;font-weight:700;color:var(--brown);}
+.product-name.white{color:#fff;}
+.product-status{font-size:12px;color:var(--muted);margin-top:2px;}
+.product-status.white{color:rgba(255,255,255,.7);}
+.box-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);}
+.box-label{font-size:13px;color:var(--brown);font-weight:600;}
+.box-stock{font-size:11px;color:var(--muted);}
+.qty-wrap{display:flex;align-items:center;gap:10px;}
+.qty-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--white);font-size:18px;font-weight:700;cursor:pointer;color:var(--brown);}
+.qty-btn.plus{background:var(--brown);color:#fff;border-color:var(--brown);}
+.qty-num{font-size:18px;font-weight:900;min-width:24px;text-align:center;}
+
+/* FILTER */
+.filter-bar{display:flex;gap:8px;padding:10px 14px;overflow-x:auto;background:var(--white);border-bottom:1px solid var(--border);}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--brown);}
+.filter-btn.active{background:var(--brown);color:#fff;border-color:var(--brown);}
+
+/* SUBMIT */
+.submit-bar{position:sticky;bottom:0;padding:14px;background:var(--bg);border-top:1px solid var(--border);}
+.submit-btn{width:100%;padding:16px;background:var(--brown);color:#fff;border:none;border-radius:12px;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;}
+.submit-btn:disabled{background:#bbb;cursor:not-allowed;}
+
+/* HISTORY */
+.hist-card{border:1.5px solid var(--border);border-radius:12px;margin:10px 14px;overflow:hidden;}
+.hist-head{background:var(--brown);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.hist-item{display:flex;justify-content:space-between;padding:8px 14px;border-top:1px solid var(--border);font-size:13px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 24px;border-radius:12px;font-size:14px;font-weight:700;display:none;z-index:999;}
+</style>
+</head>
+<body>
+
+<!-- מסך כניסה -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-logo">🥐 Bake House Roasters</div>
+    <div class="login-sub" id="login-sub">מי אתה?</div>
+    <div id="user-btns" style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px">
+      <button class="login-btn" onclick="pickUser('נתנאל')">
+        <div class="avatar" style="background:var(--gold);color:var(--brown)">נ</div>נתנאל
+      </button>
+      <button class="login-btn" onclick="pickUser('ישראל')">
+        <div class="avatar" style="background:var(--gold);color:var(--brown)">י</div>ישראל
+      </button>
+      <button class="login-btn" onclick="pickUser('ישי')">
+        <div class="avatar" style="background:var(--gold);color:var(--brown)">יש</div>ישי
+      </button>
+    </div>
+    <div id="branch-btns" style="width:100%;max-width:320px;display:none;flex-direction:column;gap:12px">
+      <button class="login-btn" onclick="pickBranch('בצלאל')">
+        <div class="avatar" style="background:#E8F5E9;color:#2E7D32">ב</div>בצלאל
+      </button>
+      <button class="login-btn" onclick="pickBranch('שוק')">
+        <div class="avatar" style="background:#E3F2FD;color:#1565C0">ש</div>שוק
+      </button>
+      <button class="login-btn" onclick="pickBranch('באר שבע')">
+        <div class="avatar" style="background:#FFF3E0;color:#E65100">ב״ש</div>באר שבע
+      </button>
+      <button class="login-btn" onclick="pickBranch('מודיעין')">
+        <div class="avatar" style="background:#F3E5F5;color:#6A1B9A">מ</div>מודיעין
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- מסך ראשי -->
+<div class="screen" id="screen-main">
+  <div class="topbar">
+    <div class="topbar-logo">🥐 Bake House Roasters</div>
+    <div class="topbar-info">
+      <button class="branch-tag" id="branch-tag" onclick="changeBranch()">—</button>
+      <button class="user-tag" id="user-tag" onclick="changeUser()">—</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" id="tab-take" onclick="showTab('take')">📦 הוצאת מוצרים</div>
+    <div class="tab" id="tab-hist" onclick="showTab('hist')">📋 היסטוריה</div>
+  </div>
+
+  <!-- טאב הוצאה -->
+  <div id="pane-take">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">הכל</button>
+      <button class="filter-btn" onclick="setFilter('freezer',this)">❄️ מקפיא</button>
+      <button class="filter-btn" onclick="setFilter('fridge',this)">🧊 מקרר</button>
+      <button class="filter-btn" onclick="setFilter('shelf',this)">🏪 מחסן</button>
+    </div>
+    <div class="products-wrap" id="products-list"></div>
+    <div class="submit-bar">
+      <button class="submit-btn" id="submit-btn" disabled onclick="doSubmit()">אישור הוצאה</button>
+    </div>
+  </div>
+
+  <!-- טאב היסטוריה -->
+  <div id="pane-hist" style="display:none;padding-bottom:20px">
+    <div id="hist-list" style="padding:8px 0"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = 'https://dessrkofoigdjyftffxo.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlc3Nya29mb2lnZGp5ZnRmZnhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxNzkyNDYsImV4cCI6MjA5Mjc1NTI0Nn0.yKFMUxQ8jab_ZfVli2HZvz4ZbC-coOKUeaVEa3_Lchs';
+const HDR = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+let currentUser = null, currentBranch = null, currentFilter = 'all';
+let products = [], qty = {};
+
+const PRODUCTS_DEFAULT = [
+  {id:1,  name:'עוגיות שוקוצ׳יפס רגיל',   emoji:'🍪', storage:'freezer', boxes:[{type:'4L',units:45},{type:'2L',units:24},{type:'בודדות',units:1}]},
+  {id:2,  name:'עוגיות שוקוצ׳יפס מודיעין', emoji:'🍪', storage:'freezer', boxes:[{type:'4L',units:36},{type:'2L',units:18},{type:'בודדות',units:1}]},
+  {id:5,  name:'עוגיות דאבל שוקולד',        emoji:'🍫', storage:'freezer', boxes:[{type:'4L',units:45},{type:'2L',units:18},{type:'בודדות',units:1}]},
+  {id:6,  name:'עוגיות גרנולה',             emoji:'🌾', storage:'freezer', boxes:[{type:'2L',units:24},{type:'בודדות',units:1}]},
+  {id:7,  name:'באבי קוקיז',               emoji:'🎀', storage:'freezer', boxes:[{type:'4L',units:24},{type:'בודדות',units:1}]},
+  {id:8,  name:'מנדלברוט חלבי',            emoji:'🥛', storage:'freezer', boxes:[{type:'4L',units:null},{type:'בודדות',units:1}]},
+  {id:9,  name:'מנדלברוט פרווה',           emoji:'🌰', storage:'freezer', boxes:[{type:'4L',units:null},{type:'בודדות',units:1}]},
+  {id:10, name:'עוגת גזר מודיעין',          emoji:'🥕', storage:'freezer', boxes:[{type:'יח׳',units:1}]},
+  {id:11, name:'עוגת גזר טבעונית',          emoji:'🥕🌱', storage:'freezer', boxes:[{type:'יח׳',units:1}]},
+  {id:12, name:'עוגת אגסים',               emoji:'🍐', storage:'freezer', boxes:[{type:'יח׳',units:1}]},
+  {id:13, name:'עוגת בננה קראמבל',          emoji:'🍌', storage:'freezer', boxes:[{type:'יח׳',units:1}]},
+  {id:14, name:'קרם שקדים',                emoji:'🤍', storage:'freezer', boxes:[{type:'1L',units:1}]},
+  {id:15, name:'קרם לסינבון',              emoji:'🍥', storage:'freezer', boxes:[{type:'1L',units:1}]},
+  {id:16, name:'קרם פאמפקין ספייס',         emoji:'🎃', storage:'freezer', boxes:[{type:'1L',units:1}]},
+  {id:22, name:'בראוניז',                  emoji:'🟫', storage:'freezer', boxes:[{type:'4L',units:36}]},
+  {id:23, name:'כדורי שוקולד',             emoji:'🍫', storage:'freezer', boxes:[{type:'4L',units:null}]},
+  {id:24, name:'כדורי תמרים',              emoji:'🟤', storage:'freezer', boxes:[{type:'4L',units:160}]},
+  {id:25, name:'קראמבל לבן',               emoji:'🤍', storage:'freezer', boxes:[{type:'4L',units:null}]},
+  {id:27, name:'שקדים קלויים',             emoji:'🌰', storage:'shelf',   boxes:[{type:'4L',units:null}]},
+  {id:28, name:'ריבת אגסים',               emoji:'🍐', storage:'fridge',  boxes:[{type:'4L',units:null}]},
+];
+
+// ===== LOGIN =====
+function pickUser(name) {
+  currentUser = name;
+  localStorage.setItem('bhr-user', name);
+  document.getElementById('login-sub').textContent = 'שלום ' + name + '! לאיזה סניף?';
+  document.getElementById('user-btns').style.display = 'none';
+  document.getElementById('branch-btns').style.display = 'flex';
+}
+
+function pickBranch(branch) {
+  currentBranch = branch;
+  localStorage.setItem('bhr-branch', branch);
+  enterMain();
+}
+
+function enterMain() {
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-main').classList.add('active');
+  document.getElementById('user-tag').textContent = currentUser;
+  document.getElementById('branch-tag').textContent = '📍 ' + currentBranch;
+  loadAndRender();
+}
+
+function changeUser() {
+  if(!confirm('להחליף משתמש?')) return;
+  localStorage.removeItem('bhr-user');
+  localStorage.removeItem('bhr-branch');
+  currentUser = null; currentBranch = null;
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('login-sub').textContent = 'מי אתה?';
+  document.getElementById('user-btns').style.display = 'flex';
+  document.getElementById('branch-btns').style.display = 'none';
+  document.getElementById('screen-login').classList.add('active');
+}
+
+function changeBranch() {
+  localStorage.removeItem('bhr-branch');
+  currentBranch = null;
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('login-sub').textContent = 'שלום ' + currentUser + '! לאיזה סניף?';
+  document.getElementById('user-btns').style.display = 'none';
+  document.getElementById('branch-btns').style.display = 'flex';
+  document.getElementById('screen-login').classList.add('active');
+}
+
+// ===== PRODUCTS =====
+async function loadAndRender() {
+  // טען מלאי מ-Supabase
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/app_data?key=eq.main_data&select=value', {headers:HDR});
+    const rows = await res.json();
+    if(rows.length && rows[0].value && rows[0].value.finishedGoods) {
+      const fg = rows[0].value.finishedGoods;
+      products = PRODUCTS_DEFAULT.map(p => {
+        const saved = fg.find(f=>f.id===p.id);
+        if(saved && saved.boxes) {
+          return {...p, boxes: p.boxes.map((b,i) => ({...b, stock: saved.boxes[i] ? (saved.boxes[i].qty||0) : 0}))};
+        }
+        return p;
+      });
+    } else {
+      products = PRODUCTS_DEFAULT;
+    }
+  } catch(e) {
+    products = PRODUCTS_DEFAULT;
+  }
+  // אתחל כמויות
+  products.forEach(p => {
+    qty[p.id] = qty[p.id] || {};
+    p.boxes.forEach(b => { if(qty[p.id][b.type]===undefined) qty[p.id][b.type]=0; });
+  });
+  renderProducts();
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  renderProducts();
+}
+
+function renderProducts() {
+  const filtered = currentFilter==='all' ? products : products.filter(p=>p.storage===currentFilter);
+  const list = document.getElementById('products-list');
+  list.innerHTML = filtered.map(p => {
+    const total = Object.values(qty[p.id]||{}).reduce((s,v)=>s+v,0);
+    const sel = total > 0;
+    const boxRows = p.boxes.map(b => {
+      const q = (qty[p.id]||{})[b.type] || 0;
+      const stockStr = b.stock !== undefined ? ' · מלאי: '+b.stock : '';
+      return `<div class="box-row">
+        <div>
+          <div class="box-label">${b.type}${b.units?' ('+b.units+' יח׳)':''}</div>
+          <div class="box-stock">${stockStr}</div>
+        </div>
+        <div class="qty-wrap">
+          <button class="qty-btn" onclick="chQty(${p.id},'${b.type}',-1)">−</button>
+          <span class="qty-num" id="q-${p.id}-${b.type.replace(/\W/g,'_')}">${q}</span>
+          <button class="qty-btn plus" onclick="chQty(${p.id},'${b.type}',1)">+</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="product-block${sel?' selected':''}">
+      <div class="product-head${sel?' selected-head':''}">
+        <div class="product-emoji">${p.emoji}</div>
+        <div>
+          <div class="product-name${sel?' white':''}">${p.name}</div>
+          <div class="product-status${sel?' white':''}">${sel?'✓ '+total+' נבחרו':''}</div>
+        </div>
+      </div>
+      ${boxRows}
+    </div>`;
+  }).join('');
+  updateSubmit();
+}
+
+function chQty(pid, boxType, d) {
+  if(!qty[pid]) qty[pid] = {};
+  qty[pid][boxType] = Math.max(0, (qty[pid][boxType]||0) + d);
+  const key = 'q-'+pid+'-'+boxType.replace(/\W/g,'_');
+  const el = document.getElementById(key);
+  if(el) el.textContent = qty[pid][boxType];
+  // Update block style
+  renderProducts();
+}
+
+function updateSubmit() {
+  const total = Object.values(qty).reduce((s,m)=>s+Object.values(m).reduce((a,v)=>a+v,0), 0);
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = total === 0;
+  btn.textContent = total > 0 ? `✅ אישור הוצאה (${total} קופסאות)` : 'אישור הוצאה';
+}
+
+async function doSubmit() {
+  const items = [];
+  products.forEach(p => {
+    Object.entries(qty[p.id]||{}).forEach(([boxType,q]) => {
+      if(q>0) items.push({productId:p.id,productName:p.name,boxType,qty:q});
+    });
+  });
+  if(!items.length) return;
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = '⏳ שומר...'; btn.disabled = true;
+
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const entry = {
+    id: Date.now(),
+    time: pad(now.getDate())+'/'+pad(now.getMonth()+1)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
+    user: currentUser,
+    branch: currentBranch,
+    items
+  };
+
+  // עדכן מלאי ב-Supabase
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/app_data?key=eq.main_data&select=value', {headers:HDR});
+    const rows = await res.json();
+    if(rows.length && rows[0].value) {
+      const data = rows[0].value;
+      if(data.finishedGoods) {
+        items.forEach(item => {
+          const fg = data.finishedGoods.find(p=>p.id===item.productId);
+          if(fg && fg.boxes) {
+            const box = fg.boxes.find(b=>b.type===item.boxType);
+            if(box) box.qty = Math.max(0,(box.qty||0)-item.qty);
+          }
+        });
+        await fetch(SB_URL+'/rest/v1/app_data', {
+          method:'POST',
+          headers:{...HDR,'Prefer':'resolution=merge-duplicates'},
+          body: JSON.stringify({key:'main_data',value:data,updated_at:new Date().toISOString()})
+        });
+      }
+    }
+  } catch(e) {}
+
+  // שמור לוג
+  try {
+    await fetch(SB_URL+'/rest/v1/take_log', {
+      method:'POST',
+      headers:HDR,
+      body:JSON.stringify({id:entry.id,time:entry.time,username:entry.user,branch:entry.branch,items:entry.items})
+    });
+  } catch(e) {}
+
+  // בדוק אם יש חוסרים (לקח פחות ממה שהיה במלאי)
+  const shortages = items.filter(item => {
+    const p = products.find(x=>x.id===item.productId);
+    if(!p) return false;
+    const box = p.boxes.find(b=>b.type===item.boxType);
+    return box && box.stock !== undefined && item.qty < box.stock && box.stock > 0;
+  });
+
+  // איפוס + בחירת סניף מחדש
+  products.forEach(p=>{ qty[p.id]={}; p.boxes.forEach(b=>{qty[p.id][b.type]=0;}); });
+  localStorage.removeItem('bhr-branch');
+  currentBranch = null;
+
+  if(shortages.length) {
+    // שאל אם רוצה לדווח חוסר
+    showShortageDialog(shortages, entry);
+  } else {
+    showToast('✅ הוצאה דווחה!');
+    setTimeout(() => returnToLogin(), 1500);
+  }
+}
+
+function showShortageDialog(shortages, entry) {
+  // הצג מסך חוסרים
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('login-sub').textContent = '⚠️ דיווח חוסרים';
+  document.getElementById('user-btns').style.display = 'none';
+  document.getElementById('branch-btns').style.display = 'none';
+
+  // הוסף מסך חוסרים דינמי
+  let shortageScreen = document.getElementById('shortage-screen');
+  if(!shortageScreen) {
+    shortageScreen = document.createElement('div');
+    shortageScreen.id = 'shortage-screen';
+    shortageScreen.style.cssText = 'width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:12px';
+    document.querySelector('.login-wrap').appendChild(shortageScreen);
+  }
+
+  shortageScreen.innerHTML = `
+    <div style="color:#fff;font-size:18px;font-weight:700;text-align:center;margin-bottom:8px">⚠️ נראה שהיה חוסר</div>
+    <div style="color:rgba(255,255,255,.7);font-size:13px;text-align:center;margin-bottom:12px">האם רצית לדווח על חוסר?</div>
+    ${shortages.map((s,i) => `
+      <div style="background:rgba(255,255,255,.1);border-radius:10px;padding:12px;width:100%">
+        <div style="color:#fff;font-weight:700;margin-bottom:6px">${s.productName} (${s.boxType})</div>
+        <div style="color:rgba(255,255,255,.7);font-size:12px;margin-bottom:8px">לקחת ${s.qty} — דווח חוסר:</div>
+        <input type="number" id="shortage-${i}" min="0" placeholder="כמה חסר?" value=""
+          style="width:100%;padding:8px;border-radius:8px;border:none;font-family:'Heebo',sans-serif;font-size:14px;text-align:center">
+      </div>`).join('')}
+    <button onclick="submitShortages(${JSON.stringify(shortages).replace(/"/g,'&quot;')}, ${JSON.stringify(entry).replace(/"/g,'&quot;')})"
+      style="width:100%;padding:14px;background:var(--gold);color:var(--brown);border:none;border-radius:12px;font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">
+      שלח דיווח חוסר
+    </button>
+    <button onclick="skipShortage()"
+      style="background:none;border:none;color:rgba(255,255,255,.6);font-family:'Heebo',sans-serif;font-size:13px;cursor:pointer">
+      דלג — הכל בסדר
+    </button>`;
+}
+
+async function submitShortages(shortages, entry) {
+  const shortageItems = shortages.map((s,i) => {
+    const val = parseInt(document.getElementById('shortage-'+i)?.value||0);
+    return val > 0 ? {...s, shortage: val} : null;
+  }).filter(Boolean);
+
+  if(shortageItems.length) {
+    try {
+      await fetch(SB_URL+'/rest/v1/take_log', {
+        method:'POST',
+        headers:HDR,
+        body:JSON.stringify({
+          id: Date.now(),
+          time: entry.time,
+          username: entry.user,
+          branch: entry.branch,
+          items: shortageItems.map(s=>({...s, isShortage:true}))
+        })
+      });
+    } catch(e) {}
+    showToast('⚠️ חוסר דווח!');
+  } else {
+    showToast('✅ הוצאה דווחה!');
+  }
+  cleanupShortageScreen();
+  setTimeout(() => returnToLogin(), 1500);
+}
+
+function skipShortage() {
+  showToast('✅ הוצאה דווחה!');
+  cleanupShortageScreen();
+  setTimeout(() => returnToLogin(), 1500);
+}
+
+function cleanupShortageScreen() {
+  const s = document.getElementById('shortage-screen');
+  if(s) s.remove();
+}
+
+function returnToLogin() {
+  document.getElementById('screen-main').classList.remove('active');
+  document.getElementById('login-sub').textContent = 'שלום '+currentUser+'! לאיזה סניף?';
+  document.getElementById('user-btns').style.display = 'none';
+  document.getElementById('branch-btns').style.display = 'flex';
+  document.getElementById('screen-login').classList.add('active');
+  loadAndRender();
+}
+
+// ===== HISTORY =====
+function showTab(tab) {
+  document.getElementById('pane-take').style.display = tab==='take'?'block':'none';
+  document.getElementById('pane-hist').style.display = tab==='hist'?'block':'none';
+  document.getElementById('tab-take').classList.toggle('active', tab==='take');
+  document.getElementById('tab-hist').classList.toggle('active', tab==='hist');
+  if(tab==='hist') loadHistory();
+}
+
+async function loadHistory() {
+  const el = document.getElementById('hist-list');
+  el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">⏳ טוען...</div>';
+  try {
+    const res = await fetch(SB_URL+'/rest/v1/take_log?select=*&order=created_at.desc&limit=50&username=eq.'+encodeURIComponent(currentUser), {headers:HDR});
+    const rows = await res.json();
+    if(!rows.length) { el.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)">אין עדיין דיווחים</div>'; return; }
+    el.innerHTML = rows.map(r => {
+      const itemsHtml = (r.items||[]).map(i=>`<div class="hist-item"><span>${i.productName}</span><span style="font-weight:700">${i.qty}×${i.boxType}</span></div>`).join('');
+      return `<div class="hist-card">
+        <div class="hist-head">
+          <span style="color:#fff;font-size:13px;font-weight:700">${r.username||''} ${r.branch?'· 📍'+r.branch:''}</span>
+          <span style="color:rgba(255,255,255,.7);font-size:12px">${r.time||''}</span>
+        </div>
+        ${itemsHtml}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)">שגיאה בטעינה</div>';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 2500);
+}
+
+// ===== INIT =====
+const su = localStorage.getItem('bhr-user');
+const sb = localStorage.getItem('bhr-branch');
+if(su && sb) {
+  currentUser = su; currentBranch = sb;
+  enterMain();
+} else if(su) {
+  currentUser = su;
+  document.getElementById('login-sub').textContent = 'שלום '+su+'! לאיזה סניף?';
+  document.getElementById('user-btns').style.display = 'none';
+  document.getElementById('branch-btns').style.display = 'flex';
+}
+</script>
+</body>
+</html>
