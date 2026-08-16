@@ -266,8 +266,21 @@ tr:hover td{background:#FDF8F3;}
   .supplier-grid{grid-template-columns:1fr;}
   .recipe-grid{grid-template-columns:1fr;}
   .hamburger{display:flex!important;}
-  .content{padding:16px;}
-  .topbar{padding:0 16px;}
+  .content{padding:12px;}
+  .topbar{padding:0 12px;}
+  /* טבלת חומרי גלם במובייל */
+  table{font-size:12px;}
+  th,td{padding:6px 4px!important;}
+  /* הסתר עמודות פחות חשובות במובייל */
+  .hide-mobile{display:none!important;}
+  /* topbar חיפוש */
+  #global-search{font-size:12px;padding:6px 10px;}
+  .topbar-actions .btn{font-size:11px;padding:4px 8px;}
+  /* כרטיסי סטטיסטיקה */
+  .stat{padding:12px;}
+  .stat-value{font-size:24px;}
+  /* overflow לטבלאות */
+  .card{overflow-x:auto;}
 }
 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;padding:8px;border:none;background:none;margin-right:-8px;}
 .hamburger span{display:block;width:22px;height:2.5px;background:var(--brown);border-radius:2px;transition:all .25s;}
@@ -357,7 +370,7 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
     <div class="page-title" id="page-title">לוח בקרה</div>
   </div>
   <!-- שורת חיפוש גלובלית -->
-  <div style="flex:1;max-width:320px;margin:0 16px;position:relative">
+  <div style="flex:1;max-width:320px;margin:0 8px;position:relative;min-width:0">
     <input type="text" id="global-search" placeholder="🔍 חיפוש חופשי... (ביצים, קמח, עוגיות)"
       oninput="globalSearch(this.value)"
       style="width:100%;padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;font-family:'Heebo',sans-serif;font-size:13px;background:#fff;outline:none;transition:border-color .2s"
@@ -469,7 +482,7 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
       <span id="ing-filter-count" style="font-size:12px;color:var(--muted);margin-right:auto"></span>
     </div>
     <table id="ing-table-wrap">
-      <thead><tr><th>שם</th><th>אריזה</th><th>כמות</th><th>סף הזמנה</th><th>מצב</th><th>עודכן</th><th>ספק</th><th>פעולות</th></tr></thead>
+      <thead><tr><th>שם</th><th>אריזה</th><th>כמות</th><th>סף הזמנה</th><th>מצב</th><th class="hide-mobile">עודכן</th><th class="hide-mobile">ספק</th><th>פעולות</th></tr></thead>
       <tbody id="ing-table"></tbody>
     </table>
     <div id="ing-grid-wrap" style="display:none;padding:16px;display:none">
@@ -888,6 +901,19 @@ let currentWeekTab = 'list';
 let orders = [];
 let ingHistory = {};
 let recycledRecipes = [];
+
+function logIngChange(id, type, change, newQty) {
+  if(!ingHistory[id]) ingHistory[id] = [];
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  ingHistory[id].unshift({
+    time: `${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    type,
+    change: (change >= 0 ? '+' : '') + change,
+    balance: newQty
+  });
+  if(ingHistory[id].length > 50) ingHistory[id] = ingHistory[id].slice(0, 50);
+}
 const ALLERGENS_DEF = [
   {id:'gluten',l:'גלוטן'},{id:'milk',l:'חלב'},{id:'eggs',l:'ביצים'},
   {id:'nuts',l:'אגוזים'},{id:'peanuts',l:'בוטנים'},{id:'sesame',l:'שומשום'},
@@ -944,7 +970,7 @@ const ingredients = [
    units:[{label:'ק"ג',qty:null}]},
   {id:23,name:'ביצים',          pack:'מגש 30 יח׳ (M)',        qty:null, min:null, supplier:'יעקב פירות וירקות',
    expiry:'2026-05-15', expiryAlert:'2026-05-08',
-   units:[{label:'מגש',qty:null},{label:'יח׳',qty:null}]},
+   units:[{label:'מגש',qty:30},{label:'יח׳',qty:1}]},
   {id:24,name:'קופסאות 4L',     pack:'יחידות',               qty:null,min:null, supplier:'Allpack',
    units:[{label:'יח׳',qty:null}]},
   {id:25,name:'שוקולד מריר 58%',pack:'ארגז 5 ק"ג',           qty:null,min:6,   supplier:'WEISS', alertNote:'מינימום הזמנה 6 ארגזים',
@@ -1910,8 +1936,8 @@ function renderIngredients() {
       <td>${qtyDisplay}</td>
       <td>${i.min!==null?i.min:'<span style="font-size:11px;color:#9E9E9E">—</span>'}</td>
       <td><span class="badge ${statusCls}">${statusLabel}</span></td>
-      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${i.updatedAt ? new Date(i.updatedAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'}</td>
-      <td style="font-size:13px">${i.supplier}</td>
+      <td class="hide-mobile" style="font-size:11px;color:var(--muted);white-space:nowrap">${i.updatedAt ? new Date(i.updatedAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+      <td class="hide-mobile" style="font-size:13px">${i.supplier}</td>
       <td>
         <button class="act-btn" onclick="editIng(${i.id})">עדכן מלאי</button>
         <button class="act-btn danger" onclick="removeIngImg(${i.id})" title="מחק תמונה" ${imgSrc?'':'style="display:none"'} id="del-img-${i.id}">🗑</button>
@@ -1998,6 +2024,34 @@ function editIng(id) {
         <input type="number" id="ei-min" value="${i.min??''}">
       </div>
     </div>
+    ${i.expiry!==undefined || i.name==='ביצים' ? `
+    <div style="height:1px;background:var(--border);margin:14px 0"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">📅 תאריך תפוגה</div>
+    <div class="form-row">
+      <div class="form-group"><label>תוקף עד</label>
+        <input type="date" id="ei-expiry" value="${i.expiry||''}">
+      </div>
+      <div class="form-group"><label>התראה מ</label>
+        <input type="date" id="ei-expiry-alert" value="${i.expiryAlert||''}">
+      </div>
+    </div>` : `
+    <div style="margin-top:8px">
+      <button type="button" onclick="document.getElementById('expiry-section-${i.id}').style.display='block';this.style.display='none'"
+        style="background:none;border:1px dashed var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-family:'Heebo',sans-serif;font-size:12px;cursor:pointer;width:100%">
+        + הוסף תאריך תפוגה
+      </button>
+      <div id="expiry-section-${i.id}" style="display:none">
+        <div style="height:1px;background:var(--border);margin:10px 0"></div>
+        <div class="form-row">
+          <div class="form-group"><label>תוקף עד</label>
+            <input type="date" id="ei-expiry">
+          </div>
+          <div class="form-group"><label>התראה מ</label>
+            <input type="date" id="ei-expiry-alert">
+          </div>
+        </div>
+      </div>
+    </div>`}
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
       <button class="btn btn-secondary" onclick="closeModal();editIngDetails(${id})" style="font-size:12px">✏️ ערוך פרטים</button>
@@ -2136,8 +2190,17 @@ function saveIng(id) {
   const i = ingredients.find(x=>x.id===id);
   const qv = document.getElementById('ei-qty')?.value;
   const mv = document.getElementById('ei-min')?.value;
-  if(qv!=='') i.qty = parseFloat(qv)||0;
-  if(mv!=='') i.min = parseFloat(mv)||null;
+  const expiry = document.getElementById('ei-expiry')?.value;
+  const expiryAlert = document.getElementById('ei-expiry-alert')?.value;
+  if(qv!=='' && qv!==undefined) {
+    const oldQty = i.qty || 0;
+    const newQty = parseFloat(qv)||0;
+    i.qty = newQty;
+    logIngChange(id, 'עדכון ידני', +(newQty - oldQty).toFixed(3), newQty);
+  }
+  if(mv!=='' && mv!==undefined) i.min = parseFloat(mv)||null;
+  if(expiry) i.expiry = expiry;
+  if(expiryAlert) i.expiryAlert = expiryAlert;
   i.updatedAt = new Date().toISOString();
   closeModal(); renderIngredients(); renderDashboard();
 }
@@ -3629,7 +3692,12 @@ function getWeekRange() {
   const sun = new Date(now); sun.setDate(now.getDate() - day);
   const sat = new Date(sun); sat.setDate(sun.getDate() + 6);
   const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  return {start: fmt(sun), end: fmt(sat)};
+  // מחזיר גם תאריך לכל יום
+  const days = Array.from({length:7}, (_,i) => {
+    const d = new Date(sun); d.setDate(sun.getDate()+i);
+    return fmt(d);
+  });
+  return {start: fmt(sun), end: fmt(sat), days};
 }
 
 function switchWeekTab(tab, el) {
@@ -3738,6 +3806,7 @@ function renderWeeklyList() {
 function renderDaysView() {
   if(!weeklyPlan) return;
   const el = document.getElementById('wpane-days');
+  const range = getWeekRange();
   const byDay = {};
   WEEK_DAYS.forEach((_,i) => byDay[i] = []);
   const unassigned = [];
@@ -3745,6 +3814,50 @@ function renderDaysView() {
     if(item.day !== undefined) byDay[item.day].push({item,idx});
     else unassigned.push({item,idx});
   });
+
+  el.innerHTML = `
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center">
+      גרור פריטים מ"רשימת ייצור" לכל יום — או לחץ 📆 בכל פריט
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
+      ${WEEK_DAYS.map((day,i) => `
+        <div class="card" style="min-height:120px"
+          ondragover="event.preventDefault();this.style.outline='2px dashed var(--brown)'"
+          ondragleave="this.style.outline=''"
+          ondrop="dropOnDay(event,${i});this.style.outline=''">
+          <div style="padding:10px 14px;background:var(--brown);color:#fff">
+            <div style="font-weight:700;font-size:13px">${day}</div>
+            <div style="font-size:11px;opacity:.7">${range.days[i]}</div>
+          </div>
+          <div style="padding:8px" id="day-items-${i}">
+            ${byDay[i].length ? byDay[i].map(({item,idx}) => {
+              const pct = Math.round((item.doneBatches/item.targetBatches)*100);
+              const emoji = pct>=100?'✅':pct>0?'⚠️':'⬜';
+              return `<div draggable="true" ondragstart="dragItem(event,${idx})"
+                style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border);font-size:12px;cursor:grab">
+                <span>${emoji} ${item.name}</span>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
+                  <button onclick="openUpdateProgress(${idx})" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--brown)">✏️</button>
+                  <button onclick="setItemDay(${idx},undefined)" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted)" title="הסר מיום">✕</button>
+                </div>
+              </div>`;
+            }).join('') : `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;border:2px dashed var(--border);border-radius:8px;margin:4px">גרור לכאן</div>`}
+          </div>
+        </div>`).join('')}
+      ${unassigned.length ? `
+        <div class="card" style="min-height:120px;border:2px dashed var(--border)">
+          <div style="padding:10px 14px;background:#F5F5F5;font-weight:700;font-size:13px;color:var(--muted)">📋 לא שובץ</div>
+          <div style="padding:8px">
+            ${unassigned.map(({item,idx}) => `
+              <div draggable="true" ondragstart="dragItem(event,${idx})"
+                style="font-size:12px;padding:6px 4px;border-bottom:1px solid var(--border);cursor:grab;display:flex;justify-content:space-between">
+                <span>⬜ ${item.name}</span>
+                <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+    </div>`;
 
   el.innerHTML = `
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center">
