@@ -726,17 +726,33 @@ tr:hover td{background:#FDF8F3;}
 
 <!-- ===== RECIPES ===== -->
 <div class="page" id="page-recipes">
-  <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-    <span style="font-size:12px;font-weight:700;color:var(--muted)">סנן:</span>
-    <button class="filter-pill active" onclick="setRecipeFilter('all',this)">הכל</button>
-    <button class="filter-pill" onclick="setRecipeFilter('dairy',this)">🥛 חלבי</button>
-    <button class="filter-pill" onclick="setRecipeFilter('parve',this)">🥚 פרווה</button>
-    <button class="filter-pill" onclick="setRecipeFilter('vegan',this)">🌱 טבעוני</button>
-    <button class="filter-pill" onclick="setRecipeFilter('gf',this)">🌾 ללא גלוטן</button>
-    <button class="filter-pill" onclick="setRecipeFilter('gluten',this)">🌾 מכיל גלוטן</button>
-    <button class="filter-pill" onclick="setRecipeFilter('nuts',this)">🥜 מכיל אגוזים</button>
+  <!-- פאנל צד למתכון -->
+  <div id="recipe-panel" style="display:none;position:fixed;top:0;left:0;width:420px;height:100vh;background:#fff;border-right:2px solid var(--border);z-index:200;overflow-y:auto;box-shadow:4px 0 24px rgba(0,0,0,.15)">
+    <div style="background:var(--brown);padding:20px;position:sticky;top:0;z-index:1">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="color:#fff;font-size:17px;font-weight:900" id="rp-name">—</div>
+        <button onclick="closeRecipePanel()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer">✕</button>
+      </div>
+      <div id="rp-meta" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px"></div>
+    </div>
+    <div style="padding:20px" id="rp-body"></div>
   </div>
-  <div class="recipe-grid" id="recipe-grid"></div>
+  <div id="recipe-panel-overlay" onclick="closeRecipePanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199"></div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <span style="font-size:12px;font-weight:700;color:var(--muted)">סנן:</span>
+      <button class="filter-pill active" onclick="setRecipeFilter('all',this)">הכל</button>
+      <button class="filter-pill" onclick="setRecipeFilter('dairy',this)">🥛 חלבי</button>
+      <button class="filter-pill" onclick="setRecipeFilter('parve',this)">🥚 פרווה</button>
+      <button class="filter-pill" onclick="setRecipeFilter('vegan',this)">🌱 טבעוני</button>
+      <button class="filter-pill" onclick="setRecipeFilter('gf',this)">🌾 ללא גלוטן</button>
+      <button class="filter-pill" onclick="setRecipeFilter('gluten',this)">🌾 מכיל גלוטן</button>
+      <button class="filter-pill" onclick="setRecipeFilter('nuts',this)">🥜 מכיל אגוזים</button>
+    </div>
+  </div>
+
+  <div class="card" id="recipe-list"></div>
 </div>
 
 </div><!-- content -->
@@ -2782,61 +2798,89 @@ function renderRecipes(){
   if(recipeFilter==='gf')     filtered = recipes.filter(r=>r.glutenFree);
   if(recipeFilter==='gluten') filtered = recipes.filter(r=>r.containsGluten===true);
   if(recipeFilter==='nuts')   filtered = recipes.filter(r=>r.nuts&&r.nuts.length>0);
-  document.getElementById('recipe-grid').innerHTML=filtered.map(r=>{
-    const m = r.price>0 ? Math.round(((r.price-r.cost)/r.price)*100) : null;
-    const ingRows = r.ings.map(i=>`
-      <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--border);font-size:12px">
-        <span>${i.name}${i.note?` <span style="font-size:10px;color:var(--muted)">(${i.note})</span>`:''}</span>
-        <span style="font-weight:700;color:var(--brown-mid)">${i.qty!==null?i.qty+' '+i.unit:i.unit}</span>
-      </div>`).join('');
 
-    const stepsHtml = r.steps ? `
-      <div style="margin-top:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">הוראות הכנה</div>
-        ${r.steps.map((s,i)=>`
-          <div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px dashed var(--border);font-size:12px;line-height:1.5">
-            <span style="background:var(--brown);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</span>
-            <span>${s}</span>
-          </div>`).join('')}
-      </div>` : '';
+  const el = document.getElementById('recipe-list');
+  if(!el) { document.getElementById('recipe-grid') && (document.getElementById('recipe-grid').innerHTML = ''); return; }
 
-    const metaHtml = `
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">
-        ${r.vegan?`<span style="background:#E8F5E9;color:var(--green);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🌱 טבעוני</span>`:''}
-        ${r.dairy?`<span style="background:#E3F2FD;color:var(--blue);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🥛 חלבי</span>`:''}
-        ${r.parve&&!r.vegan?`<span style="background:#FAF5EE;color:var(--brown-mid);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🥚 פרווה</span>`:''}
-        ${r.glutenFree?`<span style="background:#E8F5E9;color:#1B5E20;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🌾 ללא גלוטן</span>`:''}
-        ${r.containsGluten===true?`<span style="background:#FFF3E0;color:var(--orange);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🌾 מכיל גלוטן</span>`:''}
-        ${r.nuts&&r.nuts.length>0?`<span style="background:var(--red-light);color:var(--red);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">🥜 אגוזים: ${r.nuts.join(', ')}</span>`:''}
-        ${r.portionWeight?`<span style="background:#FAF5EE;color:var(--brown-mid);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">⚖️ ${r.portionWeight} גרם ל${r.portionLabel||'גליל'}</span>`:''}
-        ${r.storage==='freezer'?`<span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">❄️ להקפאה</span>`:''}
-        ${r.storage==='fridge'?`<span style="background:#E0F7FA;color:#00838F;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">🧊 מקרר</span>`:''}
-      </div>`;
+  if(!filtered.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">אין מתכונים מתאימים</div>';
+    return;
+  }
 
-    const packagingHtml = r.packaging ? `
-      <div style="margin-top:8px;padding:8px 10px;background:#FAF5EE;border-radius:6px;font-size:12px;color:var(--brown-mid)">
-        📦 ${r.packaging}
-      </div>` : '';
-
-    return`<div class="recipe-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between">
-        <div class="recipe-name">${r.name}</div>
+  el.innerHTML = filtered.map(r => {
+    const badges = [
+      r.vegan ? '🌱 טבעוני' : '',
+      r.dairy ? '🥛 חלבי' : '',
+      r.parve && !r.vegan ? '🥚 פרווה' : '',
+      r.containsGluten ? '🌾 גלוטן' : '',
+      r.storage === 'freezer' ? '❄️' : r.storage === 'fridge' ? '🧊' : '',
+    ].filter(Boolean).join(' · ');
+    return `<div onclick="openRecipePanel(${r.id})" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s"
+      onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-weight:700;font-size:14px">${r.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${r.portions} ${r.portionLabel||'יח׳'} לנגלה · ${badges}</div>
       </div>
-      ${metaHtml}
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${r.portions} ${r.portionLabel?r.portionLabel+'ות':r.name.includes('גליל')||r.portionLabel==='גליל'?'גלילים':'יח׳'} לנגלה</div>
-      <div style="margin:8px 0">${ingRows}</div>
-      ${packagingHtml}
-      ${stepsHtml}
-      <div class="recipe-footer" style="margin-top:12px">
-        <span style="font-size:12px;color:var(--muted)">${r.portions} יח׳ לנגלה</span>
-        ${m!==null?`<span class="${m>60?'profit-good':'profit-low'}">רווח ${m}%</span>`:'<span style="font-size:11px;color:var(--muted)">מחיר לא הוגדר</span>'}
-      </div>
-      <button class="btn btn-gold" style="width:100%;margin-top:10px" onclick="quickProduce(${r.id})">🍪 דווח ייצור</button>
-      <button class="btn btn-secondary" style="width:100%;margin-top:6px;font-size:12px" onclick="editRecipe(${r.id})">✏️ ערוך מתכון</button>
-      <button class="btn btn-secondary" style="width:100%;margin-top:6px;font-size:12px;color:var(--red);border-color:var(--red)" onclick="deleteRecipe(${r.id})">🗑 מחק מתכון</button>
+      <div style="color:var(--muted);font-size:18px">›</div>
     </div>`;
   }).join('');
 }
+
+function openRecipePanel(id) {
+  const r = recipes.find(x=>x.id===id);
+  if(!r) return;
+
+  document.getElementById('rp-name').textContent = r.name;
+
+  const badges = [
+    r.vegan ? '<span style="background:#E8F5E9;color:var(--green);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🌱 טבעוני</span>' : '',
+    r.dairy ? '<span style="background:#E3F2FD;color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🥛 חלבי</span>' : '',
+    r.parve&&!r.vegan ? '<span style="background:#FAF5EE;color:var(--brown-mid);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🥚 פרווה</span>' : '',
+    r.containsGluten ? '<span style="background:#FFF3E0;color:var(--orange);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🌾 גלוטן</span>' : '',
+    r.glutenFree ? '<span style="background:#E8F5E9;color:#1B5E20;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ ללא גלוטן</span>' : '',
+    r.nuts&&r.nuts.length>0 ? `<span style="background:var(--red-light);color:var(--red);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🥜 ${r.nuts.join(', ')}</span>` : '',
+    r.storage==='freezer' ? '<span style="background:var(--blue-light);color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">❄️ להקפאה</span>' : '',
+    r.storage==='fridge' ? '<span style="background:#E0F7FA;color:#00838F;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">🧊 מקרר</span>' : '',
+    r.portionWeight ? `<span style="background:#FAF5EE;color:var(--brown-mid);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">⚖️ ${r.portionWeight} גרם</span>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('rp-meta').innerHTML = badges;
+
+  const m = r.price>0 ? Math.round(((r.price-r.cost)/r.price)*100) : null;
+
+  const ingRows = (r.ings||[]).map(i=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--border);font-size:13px">
+      <span>${i.name}</span>
+      <span style="font-weight:700;color:var(--brown-mid)">${i.qty!==null?i.qty+' '+i.unit:i.unit}</span>
+    </div>`).join('');
+
+  const stepsHtml = r.steps ? r.steps.map((s,i)=>`
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);font-size:13px;line-height:1.5">
+      <span style="background:var(--brown);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</span>
+      <span>${s}</span>
+    </div>`).join('') : '';
+
+  document.getElementById('rp-body').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">${r.portions} ${r.portionLabel||'יח׳'} לנגלה${r.notes?` · ${r.notes}`:''}</div>
+    ${m!==null?`<div style="color:var(--green);font-weight:700;font-size:14px;margin-bottom:12px">רווח ${m}%</div>`:''}
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase">חומרי גלם</div>
+    ${ingRows}
+    ${r.packaging?`<div style="margin-top:10px;padding:8px 12px;background:#FAF5EE;border-radius:8px;font-size:12px;color:var(--brown-mid)">📦 ${r.packaging}</div>`:''}
+    ${r.steps?`<div style="font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px;text-transform:uppercase">הוראות הכנה</div>${stepsHtml}`:''}
+    <div style="display:grid;gap:8px;margin-top:20px">
+      <button class="btn btn-gold" onclick="closeRecipePanel();quickProduce(${r.id})">🍪 דווח ייצור</button>
+      <button class="btn btn-secondary" onclick="closeRecipePanel();editRecipe(${r.id})">✏️ ערוך מתכון</button>
+      <button class="btn btn-secondary" style="color:var(--red);border-color:var(--red)" onclick="closeRecipePanel();deleteRecipe(${r.id})">🗑 מחק מתכון</button>
+    </div>`;
+
+  document.getElementById('recipe-panel').style.display = 'block';
+  document.getElementById('recipe-panel-overlay').style.display = 'block';
+}
+
+function closeRecipePanel() {
+  document.getElementById('recipe-panel').style.display = 'none';
+  document.getElementById('recipe-panel-overlay').style.display = 'none';
+}
+
 
 function editRecipe(id) {
   const r = recipes.find(x=>x.id===id);
