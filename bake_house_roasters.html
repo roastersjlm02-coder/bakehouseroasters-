@@ -1543,6 +1543,7 @@ function renderTakeLog(showAll) {
       <button class="act-btn danger" onclick="deleteTakeEntry(${entry.id})" title="מחק רשומה" style="flex-shrink:0">🗑</button>
     </div>`;
   }).join('') + (log.length > 5 && !showAll ? `<div style="padding:10px 20px;text-align:center;font-size:12px;color:var(--muted)">ועוד ${log.length-5} רשומות</div>` : '');
+  const orderEl = document.getElementById('dash-order-list');
   if(orderEl) {
     const toOrder = ingredients.filter(i => i.qty!==null && i.min!==null && i.qty < i.min);
     const pending = ingredients.filter(i => i.qty===null && i.min!==null);
@@ -3384,6 +3385,7 @@ function renderNutrPreview(product, data, serving) {
 
 // ===================== LOCALSTORAGE =====================
 const LS_KEY = 'bhr-data-v1';
+const CODE_VERSION = '2026-04-25'; // עדכן כל פעם שמשנים נתוני בסיס בקוד (זהירות: הקפצה מוחקת localStorage כולל לוג ייצור!)
 
 // ===================== SUPABASE SYNC =====================
 const SB_URL = 'https://dessrkofoigdjyftffxo.supabase.co';
@@ -3410,7 +3412,7 @@ async function sbSet(key, value) {
 
 async function syncToSupabase() {
   const data = {
-    codeVersion: '2026-08-19',
+    codeVersion: CODE_VERSION,
     ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,expiry:i.expiry,expiryAlert:i.expiryAlert,updatedAt:i.updatedAt})),
     finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
     nutritionData,
@@ -3536,7 +3538,7 @@ function loadImportFile(input) {
 function saveToStorage() {
   try {
     const data = {
-      codeVersion: '2026-04-25',
+      codeVersion: CODE_VERSION,
       ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,expiry:i.expiry,expiryAlert:i.expiryAlert,updatedAt:i.updatedAt})),
       finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
       dispatches: dispatches.map(d=>({id:d.id,branch:d.branch,status:d.status,order:d.order})),
@@ -3560,8 +3562,7 @@ function loadFromStorage() {
     const data = JSON.parse(raw);
 
     // גרסת הקוד — אם localStorage ישן יותר, נתעלם ממנו
-    const codeVersion = '2026-04-25'; // עדכן כל פעם שמשנים נתוני בסיס בקוד
-    if(data.codeVersion && data.codeVersion < codeVersion) {
+    if(data.codeVersion && data.codeVersion < CODE_VERSION) {
       console.log('localStorage ישן — מתעלם מנתוני בסיס, שומר רק שינויים ידניים');
       localStorage.removeItem(LS_KEY);
       return;
@@ -3754,8 +3755,10 @@ function checkLowStockOnLoad() {
 
 // ===================== INIT =====================
 (async () => {
-  const fromCloud = await loadFromSupabase();
-  if(!fromCloud) loadFromStorage();
+  // קודם נתונים מקומיים (לוג ייצור, תעודות משלוח, אלרגנים, שילוחים — קיימים רק ב-localStorage),
+  // ואז הענן דורס את הכמויות המשותפות (חומרי גלם + מוצרים סופיים) כדי שניכויי השליח יגברו.
+  loadFromStorage();
+  await loadFromSupabase();
   await loadTakeLogFromSupabase();
   updateApiKeyBtn();
   // שחזר דף מה-URL hash
@@ -3766,8 +3769,8 @@ function checkLowStockOnLoad() {
     nav(hash, navEl);
   } else {
     renderDashboard();
-    checkLowStockOnLoad();
   }
+  checkLowStockOnLoad();
 })();
 </script>
 </body>
