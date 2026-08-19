@@ -1410,12 +1410,14 @@ function nav(page, el) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   if(el) el.classList.add('active');
   document.getElementById('page-'+page).classList.add('active');
+  // שמור דף נוכחי ב-URL
+  history.replaceState(null, '', '#' + page);
   // close sidebar on mobile after nav
   document.querySelector('.sidebar').classList.remove('open');
   document.getElementById('sidebar-overlay').classList.remove('open');
   const btn = document.getElementById('hamburger-btn');
   if(btn){const s=btn.querySelectorAll('span');s[0].style.cssText='';s[1].style.cssText='';s[2].style.cssText='';}
-  const titles = {dashboard:'לוח בקרה',ingredients:'חומרי גלם',finished:'מוצרים סופיים',suppliers:'ספקים',dispatch:'משלוחים לסניפים',allergens:'אלרגנים',labels:'תוויות והדפסה',recipes:'מתכונים ועלויות',production:'דיווח ייצור',nutrition:'ערכים תזונתיים'};
+  const titles = {dashboard:'לוח בקרה',ingredients:'חומרי גלם',finished:'מוצרים סופיים',suppliers:'ספקים',dispatch:'משלוחים לסניפים',allergens:'אלרגנים',labels:'תוויות והדפסה',recipes:'מתכונים ועלויות',production:'דיווח ייצור',nutrition:'ערכים תזונתיים',orders:'הזמנות סניפים',weekly:'תכנון שבועי'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='dashboard') { renderDashboard(); checkLowStockOnLoad(); }
   if(page==='ingredients') renderIngredients();
@@ -1427,6 +1429,8 @@ function nav(page, el) {
   if(page==='nutrition') initNutrition();
   if(page==='production') initProduction();
   if(page==='recipes') renderRecipes();
+  if(page==='orders') renderOrders();
+  if(page==='weekly') renderWeeklyPage();
 }
 
 // ===================== DASHBOARD =====================
@@ -3707,8 +3711,16 @@ function checkLowStockOnLoad() {
   if(!fromCloud) loadFromStorage();
   await loadTakeLogFromSupabase();
   updateApiKeyBtn();
-  renderDashboard();
-  checkLowStockOnLoad();
+  // שחזר דף מה-URL hash
+  const hash = window.location.hash.replace('#','');
+  const validPages = ['dashboard','ingredients','finished','suppliers','dispatch','allergens','labels','recipes','production','nutrition','orders','weekly'];
+  if(hash && validPages.includes(hash)) {
+    const navEl = document.querySelector(`[onclick*="nav('${hash}'"]`);
+    nav(hash, navEl);
+  } else {
+    renderDashboard();
+    checkLowStockOnLoad();
+  }
 })();
 </script>
 </body>
