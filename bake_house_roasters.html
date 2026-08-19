@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🥐 Bake House Roasters</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥐</text></svg>">
+<title>Bake House Roasters — מערכת ניהול</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
@@ -266,21 +265,8 @@ tr:hover td{background:#FDF8F3;}
   .supplier-grid{grid-template-columns:1fr;}
   .recipe-grid{grid-template-columns:1fr;}
   .hamburger{display:flex!important;}
-  .content{padding:12px;}
-  .topbar{padding:0 12px;}
-  /* טבלת חומרי גלם במובייל */
-  table{font-size:12px;}
-  th,td{padding:6px 4px!important;}
-  /* הסתר עמודות פחות חשובות במובייל */
-  .hide-mobile{display:none!important;}
-  /* topbar חיפוש */
-  #global-search{font-size:12px;padding:6px 10px;}
-  .topbar-actions .btn{font-size:11px;padding:4px 8px;}
-  /* כרטיסי סטטיסטיקה */
-  .stat{padding:12px;}
-  .stat-value{font-size:24px;}
-  /* overflow לטבלאות */
-  .card{overflow-x:auto;}
+  .content{padding:16px;}
+  .topbar{padding:0 16px;}
 }
 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;cursor:pointer;padding:8px;border:none;background:none;margin-right:-8px;}
 .hamburger span{display:block;width:22px;height:2.5px;background:var(--brown);border-radius:2px;transition:all .25s;}
@@ -289,43 +275,6 @@ tr:hover td{background:#FDF8F3;}
 </style>
 </head>
 <body>
-
-<!-- מסך כניסה -->
-<div id="login-gate" style="position:fixed;inset:0;background:#3E2723;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:30px">
-  <div style="font-size:32px;margin-bottom:8px">🥐</div>
-  <div style="color:#fff;font-size:22px;font-weight:900;margin-bottom:4px">Bake House Roasters</div>
-  <div style="color:rgba(255,255,255,.6);font-size:14px;margin-bottom:32px">מערכת ניהול פנימית</div>
-  <div style="width:100%;max-width:320px">
-    <input type="password" id="login-pw" placeholder="סיסמה"
-      style="width:100%;padding:14px;border-radius:10px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-family:'Heebo',sans-serif;font-size:16px;text-align:center;margin-bottom:12px;outline:none"
-      onkeydown="if(event.key==='Enter')checkPassword()">
-    <button onclick="checkPassword()"
-      style="width:100%;padding:14px;border-radius:10px;border:none;background:#F9A825;color:#3E2723;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer">
-      כניסה
-    </button>
-    <div id="login-error" style="color:#ff8a80;font-size:13px;text-align:center;margin-top:10px;display:none">
-      סיסמה שגויה — נסה שוב
-    </div>
-  </div>
-</div>
-<script>
-const APP_PASSWORD = 'bake2024';
-function checkPassword() {
-  const pw = document.getElementById('login-pw').value;
-  if(pw === APP_PASSWORD) {
-    document.getElementById('login-gate').style.display = 'none';
-    sessionStorage.setItem('bhr-auth','1');
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-    document.getElementById('login-pw').value = '';
-    document.getElementById('login-pw').focus();
-  }
-}
-if(sessionStorage.getItem('bhr-auth')==='1') {
-  document.getElementById('login-gate').style.display = 'none';
-}
-</script>
-
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div class="layout">
 
@@ -343,14 +292,12 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
     <div class="nav-item" onclick="nav('finished',this)"><span class="icon">📦</span> מוצרים סופיים</div>
     <div class="nav-item" onclick="nav('suppliers',this)"><span class="icon">🚛</span> ספקים</div>
     <div class="nav-section">סניפים</div>
-    <div class="nav-item" onclick="nav('orders',this)"><span class="icon">🛒</span> הזמנות סניפים</div>
     <div class="nav-item" onclick="nav('dispatch',this)"><span class="icon">🚚</span> משלוחים</div>
     <div class="nav-section">בטיחות</div>
     <div class="nav-item" onclick="nav('allergens',this)"><span class="icon">⚠️</span> אלרגנים</div>
     <div class="nav-item" onclick="nav('labels',this)"><span class="icon">🏷️</span> תוויות אחסון</div>
     <div class="nav-item" onclick="nav('nutrition',this)"><span class="icon">🥗</span> ערכים תזונתיים</div>
     <div class="nav-section">ייצור</div>
-    <div class="nav-item" onclick="nav('weekly',this)"><span class="icon">📅</span> תכנון שבועי</div>
     <div class="nav-item" onclick="nav('production',this)"><span class="icon">🍪</span> דיווח ייצור</div>
     <div class="nav-item" onclick="nav('recipes',this)"><span class="icon">📋</span> מתכונים</div>
   </nav>
@@ -369,15 +316,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
     </button>
     <div class="page-title" id="page-title">לוח בקרה</div>
   </div>
-  <!-- שורת חיפוש גלובלית -->
-  <div style="flex:1;max-width:320px;margin:0 8px;position:relative;min-width:0">
-    <input type="text" id="global-search" placeholder="🔍 חיפוש חופשי... (ביצים, קמח, עוגיות)"
-      oninput="globalSearch(this.value)"
-      style="width:100%;padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;font-family:'Heebo',sans-serif;font-size:13px;background:#fff;outline:none;transition:border-color .2s"
-      onfocus="this.style.borderColor='var(--brown)';document.getElementById('search-results').style.display='block'"
-      onblur="setTimeout(()=>document.getElementById('search-results').style.display='none',200)">
-    <div id="search-results" style="display:none;position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;border:1.5px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:320px;overflow-y:auto;z-index:500"></div>
-  </div>
   <div class="topbar-actions" id="topbar-actions">
     <span id="save-indicator" style="font-size:11px;color:var(--muted);transition:color .3s"></span>
     <button class="btn btn-secondary" onclick="exportData()" style="font-size:12px;padding:6px 12px" title="ייצא נתונים לקובץ">📤 ייצא</button>
@@ -391,8 +329,7 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
 
 <!-- ===== DASHBOARD ===== -->
 <div class="page active" id="page-dashboard">
-  <div id="low-stock-banner" style="display:none;background:var(--red);color:#fff;border-radius:12px;padding:18px 20px;margin-bottom:16px"></div>
-  <div id="orders-banner" style="display:none;background:var(--orange);color:#fff;border-radius:12px;padding:14px 20px;margin-bottom:16px"></div>
+  <div id="low-stock-banner" style="display:none;background:var(--red);color:#fff;border-radius:12px;padding:18px 20px;margin-bottom:20px"></div>
   <div class="stats-grid">
     <div class="stat s-red"><div class="stat-label">התראות מלאי</div><div class="stat-value red" id="d-alerts">2</div><div class="stat-sub">חומרי גלם בסף נמוך</div></div>
     <div class="stat s-green"><div class="stat-label">קופסאות במלאי</div><div class="stat-value green" id="d-boxes">27</div><div class="stat-sub">כל המוצרים</div></div>
@@ -452,6 +389,18 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
 
 <!-- ===== INGREDIENTS ===== -->
 <div class="page" id="page-ingredients">
+  <!-- פאנל צד לפרטי פריט -->
+  <div id="ing-panel" style="display:none;position:fixed;top:0;left:0;width:320px;height:100vh;background:#fff;border-right:2px solid var(--border);z-index:200;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.15)">
+    <div style="background:var(--brown);padding:20px;position:sticky;top:0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="color:#fff;font-size:16px;font-weight:700" id="ing-panel-name">—</div>
+        <button onclick="closeIngPanel()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer">✕</button>
+      </div>
+      <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px" id="ing-panel-supplier"></div>
+    </div>
+    <div style="padding:20px" id="ing-panel-body"></div>
+  </div>
+  <div id="ing-panel-overlay" onclick="closeIngPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:199"></div>
   <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat s-red"><div class="stat-label">ממתין לעדכון</div><div class="stat-value red" id="ing-pending">18</div><div class="stat-sub">כמויות לא הוזנו</div></div>
     <div class="stat s-green"><div class="stat-label">פריטים</div><div class="stat-value green">24</div><div class="stat-sub">חומרי גלם</div></div>
@@ -482,7 +431,7 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
       <span id="ing-filter-count" style="font-size:12px;color:var(--muted);margin-right:auto"></span>
     </div>
     <table id="ing-table-wrap">
-      <thead><tr><th>שם</th><th>אריזה</th><th>כמות</th><th>סף הזמנה</th><th>מצב</th><th class="hide-mobile">עודכן</th><th class="hide-mobile">ספק</th><th>פעולות</th></tr></thead>
+      <thead><tr><th>שם</th><th>אריזה</th><th>כמות</th><th>סף הזמנה</th><th>מצב</th><th>עודכן</th><th>ספק</th><th>פעולות</th></tr></thead>
       <tbody id="ing-table"></tbody>
     </table>
     <div id="ing-grid-wrap" style="display:none;padding:16px;display:none">
@@ -493,18 +442,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
 
 <!-- ===== FINISHED GOODS ===== -->
 <div class="page" id="page-finished">
-  <!-- Side panel -->
-  <div id="fg-panel" style="display:none;position:fixed;top:0;left:0;width:340px;height:100vh;background:#fff;border-right:2px solid var(--border);z-index:200;overflow-y:auto;box-shadow:4px 0 20px rgba(0,0,0,.15)">
-    <div style="background:var(--brown);padding:20px;position:sticky;top:0">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="color:#fff;font-size:16px;font-weight:700" id="panel-name">—</div>
-        <button onclick="closeFgPanel()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer">✕</button>
-      </div>
-      <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:4px" id="panel-badges"></div>
-    </div>
-    <div style="padding:20px" id="panel-content"></div>
-  </div>
-  <div id="fg-panel-overlay" onclick="closeFgPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199"></div>
   <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat s-gold"><div class="stat-label">סה"כ קופסאות</div><div class="stat-value gold" id="fg-total">27</div><div class="stat-sub">כל הסוגים</div></div>
     <div class="stat s-green"><div class="stat-label">60 גרם</div><div class="stat-value green" id="fg-60">19</div><div class="stat-sub">בצלאל, שוק, ב"ש</div></div>
@@ -535,7 +472,7 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
       </div>
     </div>
     <table>
-      <thead><tr><th>מוצר + סה"כ יח׳</th><th style="text-align:center">4L</th><th style="text-align:center">2L</th><th style="text-align:center">1L</th><th style="text-align:center">בודדות</th><th style="text-align:center">יח׳</th><th>פעולות</th></tr></thead>
+      <thead><tr><th>מוצר + סה"כ יח׳</th><th>משקל</th><th colspan="2">קופסאות (סוג | יח׳/קופסא | כמות)</th><th>סניפים</th><th>פעולות</th></tr></thead>
       <tbody id="fg-table"></tbody>
     </table>
   </div>
@@ -562,36 +499,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
   </div>
 
   <div class="supplier-grid" id="supplier-grid"></div>
-</div>
-
-<!-- ===== ORDERS ===== -->
-<div class="page" id="page-orders">
-  <div class="page-header">
-    <div>
-      <div class="page-title">🛒 הזמנות סניפים</div>
-      <div class="page-sub">הזמנות נכנסות מהסניפים</div>
-    </div>
-    <button class="btn btn-primary" onclick="openNewOrderModal()">+ הזמנה ידנית</button>
-  </div>
-
-  <!-- סיכום סטטוס -->
-  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
-    <div class="stat s-orange"><div class="stat-label">ממתינות</div><div class="stat-value" id="ord-pending">0</div></div>
-    <div class="stat s-blue"><div class="stat-label">בהכנה</div><div class="stat-value" id="ord-preparing">0</div></div>
-    <div class="stat s-green"><div class="stat-label">מוכנות</div><div class="stat-value" id="ord-ready">0</div></div>
-    <div class="stat s-purple"><div class="stat-label">נשלחו</div><div class="stat-value" id="ord-sent">0</div></div>
-  </div>
-
-  <!-- פילטר סניף -->
-  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-    <button class="pill active" onclick="setOrderFilter('all',this)">כל הסניפים</button>
-    <button class="pill" onclick="setOrderFilter('בצלאל',this)">בצלאל</button>
-    <button class="pill" onclick="setOrderFilter('שוק',this)">שוק</button>
-    <button class="pill" onclick="setOrderFilter('באר שבע',this)">באר שבע</button>
-    <button class="pill" onclick="setOrderFilter('מודיעין',this)">מודיעין</button>
-  </div>
-
-  <div id="orders-list"></div>
 </div>
 
 <!-- ===== DISPATCH ===== -->
@@ -667,54 +574,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
     <button class="btn btn-primary no-print" onclick="window.print()">🖨️ הדפס</button>
   </div>
   <div class="label-grid-print" id="label-print-grid"></div>
-</div>
-
-<!-- ===== WEEKLY PLAN ===== -->
-<div class="page" id="page-weekly">
-  <div class="page-header">
-    <div>
-      <div class="page-title">📅 תכנון שבועי</div>
-      <div class="page-sub" id="weekly-period">טוען...</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-secondary" onclick="showWeeklySummary()">📊 היסטוריה</button>
-      <button class="btn btn-secondary" onclick="archiveWeek()" title="סיים שבוע זה ופתח חדש">📦 סיים שבוע</button>
-      <button class="btn btn-primary" onclick="openNewWeekModal()">✏️ עדכן תכנון</button>
-    </div>
-  </div>
-
-  <!-- טאבים: רשימה / ימים / קניות -->
-  <div style="display:flex;gap:8px;margin-bottom:16px">
-    <button id="wtab-list" onclick="switchWeekTab('list',this)"
-      style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--brown);background:var(--brown);color:#fff;font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-      📋 רשימת ייצור
-    </button>
-    <button id="wtab-days" onclick="switchWeekTab('days',this)"
-      style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--white);color:var(--brown);font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-      📆 לוח שבועי
-    </button>
-    <button id="wtab-shop" onclick="switchWeekTab('shop',this)"
-      style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:var(--white);color:var(--brown);font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer">
-      🛒 רשימת קניות
-    </button>
-  </div>
-
-  <!-- סטטוס -->
-  <div id="weekly-stats" class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;display:none">
-    <div class="stat s-blue"><div class="stat-label">יעדים</div><div class="stat-value" id="wp-total">0</div></div>
-    <div class="stat s-green"><div class="stat-label">הושלמו</div><div class="stat-value" id="wp-done">0</div></div>
-    <div class="stat s-orange"><div class="stat-label">חלקי</div><div class="stat-value" id="wp-partial">0</div></div>
-    <div class="stat s-red"><div class="stat-label">לא בוצע</div><div class="stat-value" id="wp-missing">0</div></div>
-  </div>
-
-  <!-- תצוגת רשימה -->
-  <div id="wpane-list"></div>
-
-  <!-- תצוגת ימים -->
-  <div id="wpane-days" style="display:none"></div>
-
-  <!-- רשימת קניות -->
-  <div id="wpane-shop" style="display:none"></div>
 </div>
 
 <!-- ===== PRODUCTION ===== -->
@@ -867,9 +726,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
 
 <!-- ===== RECIPES ===== -->
 <div class="page" id="page-recipes">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-    <button class="btn btn-secondary" onclick="openRecycleBin()" style="font-size:13px">🗑 סל מחזור</button>
-  </div>
   <div style="background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
     <span style="font-size:12px;font-weight:700;color:var(--muted)">סנן:</span>
     <button class="filter-pill active" onclick="setRecipeFilter('all',this)">הכל</button>
@@ -894,26 +750,6 @@ if(sessionStorage.getItem('bhr-auth')==='1') {
 
 <script>
 // ===================== DATA =====================
-// משתנים גלובליים
-let weeklyPlan = null;
-let weeklyHistory = [];
-let currentWeekTab = 'list';
-let orders = [];
-let ingHistory = {};
-let recycledRecipes = [];
-
-function logIngChange(id, type, change, newQty) {
-  if(!ingHistory[id]) ingHistory[id] = [];
-  const now = new Date();
-  const pad = n=>String(n).padStart(2,'0');
-  ingHistory[id].unshift({
-    time: `${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
-    type,
-    change: (change >= 0 ? '+' : '') + change,
-    balance: newQty
-  });
-  if(ingHistory[id].length > 50) ingHistory[id] = ingHistory[id].slice(0, 50);
-}
 const ALLERGENS_DEF = [
   {id:'gluten',l:'גלוטן'},{id:'milk',l:'חלב'},{id:'eggs',l:'ביצים'},
   {id:'nuts',l:'אגוזים'},{id:'peanuts',l:'בוטנים'},{id:'sesame',l:'שומשום'},
@@ -926,31 +762,31 @@ const BRANCHES = [
   {id:'modiin',name:'מודיעין',color:'#6A1B9A',days:'א׳ / ב׳',type:'frozen'},
 ];
 const ingredients = [
-  {id:1, name:'שמן קנולה',      pack:'בקבוק 750 מ"ל (ארגז 15)', qty:null,min:12,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-12 בקבוקים',
-   units:[{label:'ארגז',qty:15},{label:'בקבוק',qty:1}]},
-  {id:2, name:'סוכר לבן',       pack:'שקית 1 ק"ג (ארגז 10)', qty:null,  min:20,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-2 ארגזים (20 שקיות)',
+  {id:1, name:'שמן קנולה',      pack:'בקבוק',               qty:24,min:12,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-12 ליטר',
+   units:[{label:'בקבוק',qty:null}]},
+  {id:2, name:'סוכר לבן',       pack:'שקית 1 ק"ג (ארגז 10)', qty:46,  min:20,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-2 ארגזים (20 שקיות)',
+   units:[{label:'ארגז',qty:null},{label:'שקית',qty:null}]},
+  {id:3, name:'סוכר חום כהה',   pack:'שק 25 ק"ג',            qty:30,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
+   units:[{label:'שק',qty:null},{label:'ק"ג',qty:null}]},
+  {id:4, name:'סוכר דמררה',     pack:'שקית 1 ק"ג',           qty:27,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
+   units:[{label:'שקית',qty:null}]},
+  {id:6, name:'קמח שקדים',      pack:'שקית 1 ק"ג',           qty:17,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
+   units:[{label:'שקית',qty:null}]},
+  {id:7, name:'שמן קוקוס',      pack:'צנצנת 500 ג׳ (ארגז 12)',qty:17.5,min:null, supplier:'אחים כהן',
+   units:[{label:'ארגז',qty:null},{label:'צנצנת',qty:null}]},
+  {id:8, name:'אבקת אפייה',     pack:'שקית',                 qty:1,min:1,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-1 ק"ג',
+   units:[{label:'שקית',qty:null}]},
+  {id:9, name:'סודה לשתייה',    pack:'שקית 1 ק"ג',           qty:4,min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:null}]},
+  {id:10,name:'קמח לבן מנופה',      pack:'שקית 1 ק"ג (ארגז 10)', qty:49,  min:30,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-3 ארגזים (30 שקיות)',
    units:[{label:'ארגז',qty:10},{label:'שקית',qty:1}]},
-  {id:3, name:'סוכר חום כהה',   pack:'שק 25 ק"ג',            qty:null,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
-   units:[{label:'שק',qty:25},{label:'ק\"ג',qty:1}]},
-  {id:4, name:'סוכר דמררה',     pack:'שקית 1 ק"ג',           qty:null,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
-   units:[{label:'שקית',qty:1}]},
-  {id:6, name:'קמח שקדים',      pack:'שקית 1 ק"ג',           qty:null,min:10,  supplier:'אחים כהן', alertNote:'התראה: מתחת ל-10 ק"ג',
-   units:[{label:'שקית',qty:null}]},
-  {id:7, name:'שמן קוקוס',      pack:'צנצנת 500 ג׳ (ארגז 12)',qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'ארגז',qty:10},{label:'צנצנת',qty:1}]},
-  {id:8, name:'אבקת אפייה',     pack:'שקית',                 qty:null,min:1,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-1 ק"ג',
-   units:[{label:'שקית',qty:null}]},
-  {id:9, name:'סודה לשתייה',    pack:'שקית 1 ק"ג',           qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:10,name:'קמח לבן מנופה',      pack:'שקית 1 ק"ג (ארגז 10)', qty:null,  min:30,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-3 ארגזים (30 שקיות)',
-   units:[{label:'ארגז',qty:10},{label:'שקית',qty:1}]},
-  {id:11,name:'שוקולד מריר 54%',pack:'ארגז (3×5 ק"ג)',       qty:null,   min:1,   supplier:'מר קייק',
-   units:[{label:'ארגז',qty:2},{label:'שקית 5 ק\"ג',qty:5}]},
-  {id:12,name:'שוקולד חלב',     pack:'שק גדול',              qty:null,min:null, supplier:'מר קייק',
-   units:[{label:'שק',qty:10}]},
-  {id:13,name:'שוקולד לבן',     pack:'שק ~20 ק"ג',           qty:null,min:null, supplier:'מר קייק',
-   units:[{label:'שק',qty:10}]},
-  {id:14,name:'משחת וניל',      pack:'בקבוק 1 ליטר',         qty:null, min:null, supplier:'מר קייק',
+  {id:11,name:'שוקולד מריר 54%',pack:'ארגז (3×5 ק"ג)',       qty:20,   min:1,   supplier:'מר קייק',
+   units:[{label:'ארגז',qty:null},{label:'שקית 5 ק"ג',qty:null}]},
+  {id:12,name:'שוקולד חלב',     pack:'שק גדול',              qty:10,min:null, supplier:'מר קייק',
+   units:[{label:'שק',qty:null}]},
+  {id:13,name:'שוקולד לבן',     pack:'שק ~20 ק"ג',           qty:15,min:null, supplier:'מר קייק',
+   units:[{label:'שק 20 ק"ג',qty:null}]},
+  {id:14,name:'משחת וניל',      pack:'בקבוק 1 ליטר',         qty:3.5, min:null, supplier:'מר קייק',
    units:[{label:'בקבוק 1L',qty:1}]},
   {id:15,name:'גבינות',         pack:'לפי הצורך',            qty:null,min:null, supplier:'Roasters',
    units:[{label:'יח׳',qty:null}]},
@@ -968,92 +804,91 @@ const ingredients = [
    units:[{label:'ק"ג',qty:null}]},
   {id:22,name:'גזר',            pack:'מינימום 1 ק"ג',        qty:null,min:1,   supplier:'יעקב פירות וירקות',
    units:[{label:'ק"ג',qty:null}]},
-  {id:23,name:'ביצים',          pack:'מגש 30 יח׳ (M)',        qty:null, min:null, supplier:'יעקב פירות וירקות',
-   expiry:'2026-05-15', expiryAlert:'2026-05-08',
+  {id:23,name:'ביצים',          pack:'מגש 30 יח׳ (M)',        qty:270, min:null, supplier:'יעקב פירות וירקות',
    units:[{label:'מגש',qty:30},{label:'יח׳',qty:1}]},
   {id:24,name:'קופסאות 4L',     pack:'יחידות',               qty:null,min:null, supplier:'Allpack',
    units:[{label:'יח׳',qty:null}]},
-  {id:25,name:'שוקולד מריר 58%',pack:'ארגז 5 ק"ג',           qty:null,min:6,   supplier:'WEISS', alertNote:'מינימום הזמנה 6 ארגזים',
-   units:[{label:'ארגז 5 ק\"ג',qty:5}]},
-  {id:26,name:'קקאו',           pack:'שק 25 ק"ג',            qty:null,  min:4,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-4 ק"ג',
-   units:[{label:'שק 25 ק\"ג',qty:25},{label:'ק\"ג',qty:1}]},
-  {id:34,name:'שוקולד מריר Callebaut 55.6%', pack:'שקית 5 ק"ג', qty:null, min:null, supplier:'מר קייק',
-   units:[{label:'שקית 5 ק\"ג',qty:5}]},
-  {id:35,name:'שמן זית',         pack:'בקבוק 3.8 ליטר',        qty:null, min:null, supplier:'אחים כהן',
+  {id:25,name:'שוקולד מריר 58%',pack:'ארגז 5 ק"ג',           qty:10,min:6,   supplier:'WEISS', alertNote:'מינימום הזמנה 6 ארגזים',
+   units:[{label:'ארגז 5 ק"ג',qty:null}]},
+  {id:26,name:'קקאו',           pack:'שק 25 ק"ג',            qty:25,  min:4,   supplier:'אחים כהן', alertNote:'התראה: מתחת ל-4 ק"ג',
+   units:[{label:'שק 25 ק"ג',qty:25},{label:'ק"ג',qty:1}]},
+  {id:34,name:'שוקולד מריר Callebaut 55.6%', pack:'שקית 5 ק"ג', qty:20, min:null, supplier:'מר קייק',
+   units:[{label:'שקית 5 ק"ג',qty:5}]},
+  {id:35,name:'שמן זית',         pack:'בקבוק 3.8 ליטר',        qty:17.1, min:null, supplier:'אחים כהן',
    units:[{label:'בקבוק 3.8L',qty:3.8},{label:'ליטר',qty:1}]},
-  {id:36,name:'אבקת סוכר',       pack:'שקית 1 ק"ג (ארגז 5)',   qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'ארגז',qty:null},{label:'שקית',qty:null}]},
-  {id:37,name:'מלח דק',          pack:'שקית 1 ק"ג',            qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:38,name:'מלח גס',          pack:'שקית 1 ק"ג',            qty:null,  min:null, supplier:'אחים כהן',
+  {id:36,name:'אבקת סוכר',       pack:'שקית 1 ק"ג (ארגז 5)',   qty:19,  min:null, supplier:'אחים כהן',
+   units:[{label:'ארגז',qty:5},{label:'שקית',qty:1}]},
+  {id:37,name:'מלח דק',          pack:'שקית 1 ק"ג',            qty:7,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:38,name:'מלח גס',          pack:'שקית 1 ק"ג',            qty:18,  min:null, supplier:'אחים כהן',
    units:[{label:'אריזה',qty:10},{label:'שקית',qty:1}]},
-  {id:39,name:'קורנפלור',        pack:'שקית 1 ק"ג (ארגז 5)',   qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'ארגז',qty:null},{label:'שקית',qty:null}]},
-  {id:40,name:'חלב סויה',        pack:'קרטון 1 ליטר (ארגז 6)', qty:null,  min:null, supplier:'אחים כהן',
+  {id:39,name:'קורנפלור',        pack:'שקית 1 ק"ג (ארגז 5)',   qty:12,  min:null, supplier:'אחים כהן',
+   units:[{label:'ארגז',qty:5},{label:'שקית',qty:1}]},
+  {id:40,name:'חלב סויה',        pack:'קרטון 1 ליטר (ארגז 6)', qty:12,  min:null, supplier:'אחים כהן',
    units:[{label:'ארגז',qty:6},{label:'קרטון',qty:1}]},
-  {id:41,name:'מי ורדים',        pack:'בקבוק',                 qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'בקבוק 750מ"ל',qty:null},{label:'בקבוק 500מ"ל',qty:null}]},
-  {id:42,name:'תרסיס שמן קנולה', pack:'פחית 500 מ"ל',          qty:null,   min:null, supplier:'אחים כהן',
+  {id:41,name:'מי ורדים',        pack:'בקבוק',                 qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'בקבוק 750מ"ל',qty:0.75},{label:'בקבוק 500מ"ל',qty:0.5}]},
+  {id:42,name:'תרסיס שמן קנולה', pack:'פחית 500 מ"ל',          qty:6,   min:null, supplier:'אחים כהן',
    units:[{label:'פחית',qty:0.5}]},
-  {id:43,name:'קינמון טחון',     pack:'שקית 1 ק"ג',            qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:44,name:'קוואקר דק',       pack:'שקית 1 ק"ג',            qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:45,name:'קוואקר עבה',      pack:'שקית 1 ק"ג (ארגז 3)',   qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'ארגז',qty:null},{label:'שקית',qty:null}]},
-  {id:46,name:'קוקוס לבן טחון',  pack:'שקית 1 ק"ג',            qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:47,name:'קוקוס רצועות טבעי',pack:'שקית 1 ק"ג',           qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:48,name:'חמוציות מיובשות', pack:'שקית',                  qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'ק"ג',qty:null}]},
-  {id:49,name:'אוכמניות מיובשות',pack:'שקית',                  qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'ק"ג',qty:null}]},
-  {id:50,name:'הל טחון',         pack:'שקית',                  qty:null, min:null, supplier:'אחים כהן',
-   units:[{label:'גרם',qty:null}]},
-  {id:51,name:'זנגביל טחון',     pack:'שקית 1 ק"ג',            qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:52,name:'צ\'ילי גרוס',     pack:'שקית 1 ק"ג',            qty:null,   min:null, supplier:'אחים כהן',
-   units:[{label:'שקית',qty:null}]},
-  {id:53,name:'תמרים כבושים',    pack:'500 גרם ליח׳',          qty:null,  min:null, supplier:'אחים כהן',
+  {id:43,name:'קינמון טחון',     pack:'שקית 1 ק"ג',            qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:44,name:'קוואקר דק',       pack:'שקית 1 ק"ג',            qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:45,name:'קוואקר עבה',      pack:'שקית 1 ק"ג (ארגז 3)',   qty:26,  min:null, supplier:'אחים כהן',
+   units:[{label:'ארגז',qty:3},{label:'שקית',qty:1}]},
+  {id:46,name:'קוקוס לבן טחון',  pack:'שקית 1 ק"ג',            qty:19,  min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:47,name:'קוקוס רצועות טבעי',pack:'שקית 1 ק"ג',           qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:48,name:'חמוציות מיובשות', pack:'שקית',                  qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'ק"ג',qty:1}]},
+  {id:49,name:'אוכמניות מיובשות',pack:'שקית',                  qty:10,  min:null, supplier:'אחים כהן',
+   units:[{label:'ק"ג',qty:1}]},
+  {id:50,name:'הל טחון',         pack:'שקית',                  qty:0.2, min:null, supplier:'אחים כהן',
+   units:[{label:'גרם',qty:1}]},
+  {id:51,name:'זנגביל טחון',     pack:'שקית 1 ק"ג',            qty:1,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:52,name:'צ\'ילי גרוס',     pack:'שקית 1 ק"ג',            qty:2,   min:null, supplier:'אחים כהן',
+   units:[{label:'שקית',qty:1}]},
+  {id:53,name:'תמרים כבושים',    pack:'500 גרם ליח׳',          qty:39,  min:null, supplier:'אחים כהן',
    units:[{label:'ארגז',qty:24},{label:'יח׳',qty:1}]},
   {id:54,name:'פקאן קלוי',       pack:'קופסת 4 ליטר',          qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'קופסה',qty:null}]},
+   units:[{label:'קופסה',qty:1}]},
   {id:55,name:'פקאן גרוס',       pack:'ק"ג',                   qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'ק"ג',qty:null}]},
+   units:[{label:'ק"ג',qty:1}]},
   {id:56,name:'אגוזי מלך רגיל',  pack:'ק"ג',                   qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'ק"ג',qty:null}]},
+   units:[{label:'ק"ג',qty:1}]},
   {id:57,name:'אגוזי מלך קלוי',  pack:'ק"ג',                   qty:null,min:null, supplier:'אחים כהן',
-   units:[{label:'ק"ג',qty:null}]},
-  {id:58,name:'שקדים שלמים',     pack:'קופסת 4 ליטר',          qty:null,  min:null, supplier:'אחים כהן',
-   units:[{label:'קופסה',qty:null}]},
-  {id:27,name:'קרם קוקוס',     pack:'בקבוק 1 ליטר (AROY-D)', qty:null,  min:null, supplier:'אחים כהן',
+   units:[{label:'ק"ג',qty:1}]},
+  {id:58,name:'שקדים שלמים',     pack:'קופסת 4 ליטר',          qty:15,  min:null, supplier:'אחים כהן',
+   units:[{label:'קופסה',qty:1}]},
+  {id:27,name:'קרם קוקוס',     pack:'בקבוק 1 ליטר (AROY-D)', qty:30,  min:null, supplier:'אחים כהן',
    units:[{label:'ארגז',qty:12},{label:'בקבוק',qty:1}]},
-  {id:28,name:'פתי בר',        pack:'חבילה 190 גרם (ארגז 9 חבילות = 1.71 ק"ג)', qty:null, min:null, supplier:'אחים כהן', alertNote:'6 ארגזים = 10.26 ק"ג',
-   units:[{label:'ארגז',qty:9},{label:'חבילה',qty:1}]},
-  {id:29,name:'מייפל',         pack:'בקבוק',                qty:null,    min:null, supplier:'אחים כהן',
+  {id:28,name:'פתי בר',        pack:'חבילה 190 גרם (ארגז 9 חבילות = 1.71 ק"ג)', qty:16.72, min:null, supplier:'אחים כהן', alertNote:'6 ארגזים = 10.26 ק"ג',
+   units:[{label:'ארגז',qty:null},{label:'חבילה',qty:null}]},
+  {id:29,name:'מייפל',         pack:'בקבוק',                qty:3,    min:null, supplier:'אחים כהן',
    units:[{label:'בקבוק',qty:null}]},
-  {id:30,name:'חומץ 5%',       pack:'בקבוק 1 ליטר',         qty:null,    min:null, supplier:'אחים כהן',
+  {id:30,name:'חומץ 5%',       pack:'בקבוק 1 ליטר',         qty:2,    min:null, supplier:'אחים כהן',
    units:[{label:'בקבוק 1L',qty:null}]},
-  {id:31,name:'סילאן 100% תמרים', pack:'צנצנת 900 גרם (ארגז 24 צנצנות)', qty:null, min:null, supplier:'אחים כהן',
+  {id:31,name:'סילאן 100% תמרים', pack:'צנצנת 900 גרם (ארגז 24 צנצנות)', qty:23.85, min:null, supplier:'אחים כהן',
    units:[{label:'ארגז',qty:null},{label:'צנצנת',qty:null}]},
-  {id:32,name:'חלב כחוש',     pack:'פחית 370 גרם (משטח 15 יח׳)', qty:null, min:null, supplier:'Roasters',
-   units:[{label:'משטח',qty:15},{label:'פחית',qty:1}]},
+  {id:32,name:'חלב כחוש',     pack:'פחית 370 גרם (משטח 15 יח׳)', qty:42, min:null, supplier:'Roasters',
+   units:[{label:'משטח',qty:null},{label:'פחית',qty:null}]},
 ];
 const finishedGoods = [
   // ===== עוגיות =====
   {id:1, name:'עוגיות שוקוצ׳יפס רגיל', weight:60, category:'עוגיות', group:'60g', storage:'freezer', branches:['betzalel','shuk','beer'],
-   boxes:[{type:'4L',units:45,qty:null},{type:'2L',units:24,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'4L',units:45,qty:1},{type:'2L',units:24,qty:4},{type:'בודדות',units:1,qty:null}]},
   {id:2, name:'עוגיות שוקוצ׳יפס מודיעין', weight:92, category:'עוגיות', group:'92g', storage:'freezer', branches:['modiin'],
-   boxes:[{type:'4L',units:36,qty:null},{type:'2L',units:18,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'4L',units:36,qty:11},{type:'2L',units:18,qty:null},{type:'בודדות',units:1,qty:null}]},
   {id:5, name:'עוגיות דאבל שוקולד', weight:80, category:'עוגיות', group:'cookies', storage:'freezer', dairy:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:45,qty:null},{type:'2L',units:18,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'4L',units:45,qty:8},{type:'2L',units:18,qty:3},{type:'בודדות',units:1,qty:null}]},
   {id:6, name:'עוגיות גרנולה',      weight:50, category:'עוגיות', group:'cookies', storage:'freezer', branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'2L (מלאה)',units:24,qty:null},{type:'2L (חלקית)',units:10,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'2L (מלאה)',units:24,qty:2},{type:'2L (חלקית)',units:10,qty:1},{type:'בודדות',units:1,qty:null}]},
   {id:7, name:'באבי קוקיז',         weight:null, category:'עוגיות', group:'cookies', storage:'freezer', branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:24,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'4L',units:24,qty:8},{type:'בודדות',units:1,qty:null}]},
   {id:8, name:'מנדלברוט חלבי',      weight:null, category:'עוגיות', group:'cookies', storage:'freezer', dairy:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null},{type:'בודדות',units:1,qty:null}]},
+   boxes:[{type:'4L',units:null,qty:4},{type:'בודדות',units:1,qty:null}]},
   {id:9, name:'מנדלברוט פרווה',     weight:null, category:'עוגיות', group:'cookies', storage:'freezer', parve:true, branches:['betzalel','shuk','beer','modiin'],
    boxes:[{type:'4L',units:null,qty:null,note:'מארזים למכירה — לעדכון'},{type:'בודדות',units:1,qty:null}]},
 
@@ -1089,21 +924,21 @@ const finishedGoods = [
 
   // ===== אחר =====
   {id:22, name:'בראוניז',            weight:null, category:'אחר', group:'other', storage:'freezer', dairy:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:36,qty:null}]},
+   boxes:[{type:'4L',units:36,qty:2}]},
   {id:23, name:'כדורי שוקולד',       weight:null, category:'אחר', group:'other', storage:'freezer', vegan:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null}]},
+   boxes:[{type:'4L',units:null,qty:8}]},
   {id:24, name:'כדורי תמרים',        weight:20,   category:'אחר', group:'other', storage:'freezer', vegan:true, glutenFree:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:160,qty:null}]},
+   boxes:[{type:'4L',units:160,qty:3}]},
   {id:25, name:'קראמבל לבן',         weight:null, category:'אחר', group:'other', storage:'freezer', dairy:true, branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null}]},
+   boxes:[{type:'4L',units:null,qty:6}]},
   {id:26, name:'ריבועי קוקוס',       weight:null, category:'אחר', group:'other', storage:'freezer', branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null}]},
+   boxes:[{type:'4L',units:null,qty:0}]},
 
   // ===== מחסן ומקרר =====
   {id:27, name:'שקדים קלויים',       weight:null, category:'מחסן', group:'shelf', storage:'shelf', branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null}]},
+   boxes:[{type:'4L',units:null,qty:11}]},
   {id:28, name:'ריבת אגסים',         weight:null, category:'מקרר', group:'fridge', storage:'fridge', branches:['betzalel','shuk','beer','modiin'],
-   boxes:[{type:'4L',units:null,qty:null,kgPerBox:4}]},
+   boxes:[{type:'4L',units:null,qty:16,kgPerBox:4}]},
 ];
 const suppliers = [
   {id:1,name:'אחים כהן',type:'יבשים',min:'₪1,000 לפני מע"מ',delivery:'ה׳ → א׳ 06:30 | ד׳ → ה׳ בבוקר',note:'',products:['שמן קנולה','סוכר לבן','סוכר חום','סוכר דמררה','קוקוס טחון','קמח שקדים','שמן קוקוס','אבקת אפייה','סודה לשתייה','קמח מנופה']},
@@ -1505,6 +1340,29 @@ const recipes = [
      'להקפיא',
      'לחתוך ל-7×7 ס"מ ולסדר בקופסאות 4 ליטר — 4 קומות × 6 יח׳ = 24 בקופסה',
    ]},
+  {id:19, name:'עוגת דבש', cost:0, price:0, portions:12, portionWeight:675, dairy:false, parve:true, containsGluten:true, nuts:['שקדים'], storage:'freezer',
+   notes:'12 עוגות | לחמם תנור ל-170° מאוורר | 35-37 דק אפייה | 650 גרם בלילה + 25 גרם שקד פרוס',
+   ings:[
+     {ingId:10, name:'קמח לבן מנופה',   qty:1780, unit:'גרם'},
+     {ingId:16, name:'אבקת אפייה',       qty:28,   unit:'גרם'},
+     {ingId:17, name:'סודה לשתייה',      qty:24,   unit:'גרם'},
+     {ingId:38, name:'מלח גס',           qty:24,   unit:'גרם'},
+     {ingId:1,  name:'שמן קנולה',        qty:800,  unit:'גרם'},
+     {ingId:2,  name:'סוכר לבן',         qty:1200, unit:'גרם'},
+     {ingId:3,  name:'סוכר חום כהה',     qty:440,  unit:'גרם'},
+     {ingId:23, name:'ביצים',            qty:15,   unit:'יח׳'},
+   ],
+   steps:[
+     'לחמם תנור מראש ל-170° מאוורר מקסימלי',
+     'להרתיח מים לתה/קפה ולהוסיף סודה לשתייה — לשים בצד',
+     'לשקול בקערת המיקסר: קמח לבן, אבקת אפייה, מלח, קינמון, ציפורן, פלפל אנגלי — לערבב עם בלון הקצפה במהירות נמוכה',
+     'להוסיף: שמן קנולה, דבש, סוכר לבן, סוכר חום, ביצים, וניל — לערבב עד אחיד',
+     'להוסיף: תמצית קפה/תה, תפוזים (480 גרם), וויסקי (240 גרם) — לערבב עד אחיד',
+     'להגביר מהירות מיקסר לכמה שניות — לא מעבר',
+     'לשקול 650 גרם בסה בכל תבנית',
+     'לפזר 25 גרם שקדים פרוסים מעל כל עוגה',
+     'לאפות 35-37 דקות',
+   ]},
 ];
 
 const productionLog = [];
@@ -1531,65 +1389,6 @@ function toggleSidebar() {
   }
 }
 
-function globalSearch(query) {
-  const el = document.getElementById('search-results');
-  if(!query || query.length < 2) { el.innerHTML = ''; return; }
-  const q = query.toLowerCase();
-  const results = [];
-
-  // חפש בחומרי גלם
-  ingredients.forEach(i => {
-    if(i.name.includes(q) || (i.supplier&&i.supplier.toLowerCase().includes(q))) {
-      const statusColor = i.qty===null?'var(--muted)':i.min&&i.qty<i.min?'var(--red)':'var(--green)';
-      const qtyStr = i.qty!==null ? i.qty : 'לא הוזן';
-      results.push(`<div onclick="nav('ingredients',document.querySelector('[onclick*=ingredients]'));document.getElementById('global-search').value='';setTimeout(()=>{const rows=document.querySelectorAll('#ing-table tr');rows.forEach(r=>{if(r.textContent.includes('${i.name}'))r.style.background='#FFF8E1';})},300)"
-        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"
-        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
-        <div>
-          <div style="font-size:13px;font-weight:700">${i.name}</div>
-          <div style="font-size:11px;color:var(--muted)">🌾 חומר גלם · ${i.supplier||''}</div>
-        </div>
-        <div style="font-size:13px;font-weight:700;color:${statusColor}">${qtyStr}</div>
-      </div>`);
-    }
-  });
-
-  // חפש במוצרים סופיים
-  finishedGoods.forEach(p => {
-    if(p.name.includes(q)) {
-      const total = p.boxes.reduce((s,b)=>s+(b.qty&&b.units?b.qty*b.units:b.qty||0),0);
-      results.push(`<div onclick="nav('finished',document.querySelector('[onclick*=finished]'));document.getElementById('global-search').value=''"
-        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center"
-        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
-        <div>
-          <div style="font-size:13px;font-weight:700">${p.name}</div>
-          <div style="font-size:11px;color:var(--muted)">📦 מוצר סופי · ${p.storage==='freezer'?'❄️ מקפיא':p.storage==='fridge'?'🧊 מקרר':'🏪 מחסן'}</div>
-        </div>
-        <div style="font-size:13px;font-weight:700;color:var(--brown)">${total>0?total+' יח׳':'—'}</div>
-      </div>`);
-    }
-  });
-
-  // חפש במתכונים
-  recipes.forEach(r => {
-    if(r.name.includes(q)) {
-      results.push(`<div onclick="nav('recipes',document.querySelector('[onclick*=recipes]'));document.getElementById('global-search').value=''"
-        style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border)"
-        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
-        <div style="font-size:13px;font-weight:700">${r.name}</div>
-        <div style="font-size:11px;color:var(--muted)">📋 מתכון</div>
-      </div>`);
-    }
-  });
-
-  if(!results.length) {
-    el.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:13px">לא נמצאו תוצאות</div>';
-  } else {
-    el.innerHTML = `<div style="padding:6px 14px;font-size:11px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border)">${results.length} תוצאות</div>` + results.join('');
-  }
-  el.style.display = 'block';
-}
-
 function nav(page, el) {
   document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1603,8 +1402,6 @@ function nav(page, el) {
   const titles = {dashboard:'לוח בקרה',ingredients:'חומרי גלם',finished:'מוצרים סופיים',suppliers:'ספקים',dispatch:'משלוחים לסניפים',allergens:'אלרגנים',labels:'תוויות והדפסה',recipes:'מתכונים ועלויות',production:'דיווח ייצור',nutrition:'ערכים תזונתיים'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='dashboard') { renderDashboard(); checkLowStockOnLoad(); }
-  if(page==='orders') renderOrders();
-  if(page==='weekly') renderWeeklyPage();
   if(page==='ingredients') renderIngredients();
   if(page==='finished') renderFinished();
   if(page==='suppliers') { renderSuppliers(); renderDeliveryDocs(); }
@@ -1649,20 +1446,7 @@ function renderDashboard() {
   }).join('')
     : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">✅ אין התראות מלאי כרגע</td></tr>';
 
-  // התראת הזמנות ממתינות בלוח בקרה
-  const pendingOrders = orders.filter(o=>o.status==='ממתינה');
-  const ordBanner = document.getElementById('orders-banner');
-  if(ordBanner) {
-    if(pendingOrders.length) {
-      ordBanner.style.display = 'block';
-      ordBanner.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
-        <div>🛒 <strong>${pendingOrders.length} הזמנות ממתינות</strong> — ${pendingOrders.map(o=>o.branch).join(', ')}</div>
-        <button class="btn btn-secondary" style="font-size:12px" onclick="nav('orders',document.querySelector('[onclick*=orders]'))">לטיפול</button>
-      </div>`;
-    } else {
-      ordBanner.style.display = 'none';
-    }
-  }
+  // מוצרים שנגמרו / דחופים להכנה
   const urgentEl = document.getElementById('dash-urgent-prod');
   if(urgentEl) {
     const empty = finishedGoods.filter(p => {
@@ -1725,25 +1509,17 @@ function renderTakeLog(showAll) {
   }
 
   el.innerHTML = entries.map(entry => {
-    const hasShortage = entry.items && entry.items.some(i=>i.isShortage);
-    const itemsStr = entry.items.map(i=>{
-      const bg = i.isShortage ? '#FFE8E8' : '#FAF5EE';
-      const col = i.isShortage ? 'var(--red)' : 'inherit';
-      const pfx = i.isShortage ? '\u26a0\ufe0f \u05d7\u05e1\u05e8: ' : '';
-      return `<span style="background:${bg};color:${col};border-radius:4px;padding:2px 8px;font-size:12px;margin-left:4px">${pfx}${i.productName} ${i.qty}\xd7${i.boxType}</span>`;
-    }).join('');
+    const itemsStr = entry.items.map(i=>`<span style="background:#FAF5EE;border-radius:4px;padding:2px 8px;font-size:12px;margin-left:4px">${i.productName} ${i.qty}×${i.boxType}</span>`).join('');
     const userBadge = entry.user ? `<span style="background:var(--gold);color:var(--brown);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px">${entry.user}</span>` : '';
-    const branchBadge = entry.branch ? `<span style="background:var(--blue-light);color:var(--blue);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px">\ud83d\udccd ${entry.branch}</span>` : '';
-    const shortageBadge = hasShortage ? `<span style="background:#FFE8E8;color:var(--red);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px">\u26a0\ufe0f \u05d7\u05d5\u05e1\u05e8</span>` : '';
-    return `<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;${hasShortage?'background:#FFF5F5':''}">
+    const branchBadge = entry.branch ? `<span style="background:var(--blue-light);color:var(--blue);border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;margin-left:4px">📍 ${entry.branch}</span>` : '';
+    return `<div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px">
       <div style="flex:1">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${entry.time}${userBadge}${branchBadge}${shortageBadge}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">${entry.time}${userBadge}${branchBadge}</div>
         <div style="flex-wrap:wrap;display:flex;gap:4px">${itemsStr}</div>
       </div>
-      <button class="act-btn danger" onclick="deleteTakeEntry(${entry.id})" title="\u05de\u05d7\u05e7 \u05e8\u05e9\u05d5\u05de\u05d4" style="flex-shrink:0">\ud83d\uddd1</button>
+      <button class="act-btn danger" onclick="deleteTakeEntry(${entry.id})" title="מחק רשומה" style="flex-shrink:0">🗑</button>
     </div>`;
-  }).join('');
-  const orderEl = document.getElementById('dash-order-list');
+  }).join('') + (log.length > 5 && !showAll ? `<div style="padding:10px 20px;text-align:center;font-size:12px;color:var(--muted)">ועוד ${log.length-5} רשומות</div>` : '');
   if(orderEl) {
     const toOrder = ingredients.filter(i => i.qty!==null && i.min!==null && i.qty < i.min);
     const pending = ingredients.filter(i => i.qty===null && i.min!==null);
@@ -1923,7 +1699,7 @@ function renderIngredients() {
            <img src="${imgSrc}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;display:block" onclick="uploadIngImg(${i.id})" title="לחץ להחלפה">
          </div>`
       : `<button onclick="uploadIngImg(${i.id})" style="width:44px;height:44px;border:1.5px dashed var(--border);border-radius:8px;background:none;cursor:pointer;color:var(--muted);font-size:18px;display:flex;align-items:center;justify-content:center" title="הוסף תמונה">+</button>`;
-    return `<tr>
+    return `<tr onclick="openIngPanel(${i.id})" style="cursor:pointer" onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
       <td>
         <div style="display:flex;align-items:center;gap:10px">
           ${imgCell}
@@ -1936,10 +1712,11 @@ function renderIngredients() {
       <td>${qtyDisplay}</td>
       <td>${i.min!==null?i.min:'<span style="font-size:11px;color:#9E9E9E">—</span>'}</td>
       <td><span class="badge ${statusCls}">${statusLabel}</span></td>
-      <td class="hide-mobile" style="font-size:11px;color:var(--muted);white-space:nowrap">${i.updatedAt ? new Date(i.updatedAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'}</td>
-      <td class="hide-mobile" style="font-size:13px">${i.supplier}</td>
+      <td style="font-size:11px;color:var(--muted);white-space:nowrap">${i.updatedAt ? new Date(i.updatedAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+      <td style="font-size:13px">${i.supplier}</td>
       <td>
-        <button class="act-btn" onclick="editIng(${i.id})">עדכן מלאי</button>
+        <button class="act-btn" onclick="event.stopPropagation();editIng(${i.id})">עדכן מלאי</button>
+        <button class="act-btn" onclick="editIngDetails(${i.id})">✏️</button>
         <button class="act-btn danger" onclick="removeIngImg(${i.id})" title="מחק תמונה" ${imgSrc?'':'style="display:none"'} id="del-img-${i.id}">🗑</button>
       </td>
     </tr>`;
@@ -2024,43 +1801,13 @@ function editIng(id) {
         <input type="number" id="ei-min" value="${i.min??''}">
       </div>
     </div>
-    ${i.expiry!==undefined || i.name==='ביצים' ? `
-    <div style="height:1px;background:var(--border);margin:14px 0"></div>
-    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">📅 תאריך תפוגה</div>
-    <div class="form-row">
-      <div class="form-group"><label>תוקף עד</label>
-        <input type="date" id="ei-expiry" value="${i.expiry||''}">
-      </div>
-      <div class="form-group"><label>התראה מ</label>
-        <input type="date" id="ei-expiry-alert" value="${i.expiryAlert||''}">
-      </div>
-    </div>` : `
-    <div style="margin-top:8px">
-      <button type="button" onclick="document.getElementById('expiry-section-${i.id}').style.display='block';this.style.display='none'"
-        style="background:none;border:1px dashed var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-family:'Heebo',sans-serif;font-size:12px;cursor:pointer;width:100%">
-        + הוסף תאריך תפוגה
-      </button>
-      <div id="expiry-section-${i.id}" style="display:none">
-        <div style="height:1px;background:var(--border);margin:10px 0"></div>
-        <div class="form-row">
-          <div class="form-group"><label>תוקף עד</label>
-            <input type="date" id="ei-expiry">
-          </div>
-          <div class="form-group"><label>התראה מ</label>
-            <input type="date" id="ei-expiry-alert">
-          </div>
-        </div>
-      </div>
-    </div>`}
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-secondary" onclick="closeModal();editIngDetails(${id})" style="font-size:12px">✏️ ערוך פרטים</button>
       <button class="btn btn-primary" onclick="saveIng(${id})">שמור</button>
     </div>`;
   openModalEl();
   calcIngTotal(id);
 }
-
 
 function deleteRecipe(id) {
   const r = recipes.find(x=>x.id===id);
@@ -2068,12 +1815,12 @@ function deleteRecipe(id) {
   document.getElementById('modal-body').innerHTML = `
     <div style="text-align:center;padding:10px 0">
       <div style="font-size:48px;margin-bottom:12px">🗑</div>
-      <h3 style="margin-bottom:8px">העבר לסל מחזור</h3>
+      <h3 style="margin-bottom:8px">מחיקת מתכון</h3>
       <div style="font-size:15px;font-weight:700;color:var(--brown);margin-bottom:8px">${r.name}</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">המתכון יועבר לסל מחזור.<br>תוכל לשחזר אותו בכל עת.</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">האם אתה בטוח שברצונך למחוק את המתכון הזה?<br>פעולה זו אינה הפיכה.</div>
       <div style="display:flex;gap:10px;justify-content:center">
         <button class="btn btn-secondary" onclick="closeModal()" style="min-width:100px">ביטול</button>
-        <button class="btn btn-primary" onclick="confirmDeleteRecipe(${id})" style="min-width:100px;background:var(--orange);border-color:var(--orange)">העבר לסל</button>
+        <button class="btn btn-primary" onclick="confirmDeleteRecipe(${id})" style="min-width:100px;background:var(--red);border-color:var(--red)">כן, מחק</button>
       </div>
     </div>`;
   openModalEl();
@@ -2081,70 +1828,48 @@ function deleteRecipe(id) {
 
 function confirmDeleteRecipe(id) {
   const idx = recipes.findIndex(x=>x.id===id);
-  if(idx > -1) {
-    const recipe = recipes.splice(idx, 1)[0];
-    recipe.deletedAt = new Date().toLocaleString('he-IL');
-    recycledRecipes.unshift(recipe);
-  }
+  if(idx > -1) recipes.splice(idx, 1);
+  // שמור מחיקה ב-localStorage
+  const deleted = JSON.parse(localStorage.getItem('bhr-deleted-recipes')||'[]');
+  if(!deleted.includes(id)) deleted.push(id);
+  localStorage.setItem('bhr-deleted-recipes', JSON.stringify(deleted));
   closeModal();
   renderRecipes();
   saveToStorage();
 }
 
-function openRecycleBin() {
-  if(!recycledRecipes.length) {
-    document.getElementById('modal-body').innerHTML = `
-      <div style="text-align:center;padding:30px">
-        <div style="font-size:48px;margin-bottom:12px">🗑</div>
-        <h3>סל המחזור ריק</h3>
-      </div>
-      <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">סגור</button></div>`;
-    openModalEl();
-    return;
-  }
-  document.getElementById('modal-body').innerHTML = `
-    <h3>🗑 סל מחזור — מתכונים</h3>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">מתכונים שנמחקו — ניתן לשחזר או למחוק לצמיתות</div>
-    ${recycledRecipes.map((r,i) => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div>
-          <div style="font-weight:700;font-size:13px">${r.name}</div>
-          <div style="font-size:11px;color:var(--muted)">נמחק: ${r.deletedAt||'לא ידוע'}</div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="restoreRecipe(${i})">↩️ שחזר</button>
-          <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px;color:var(--red);border-color:var(--red)" onclick="permanentDelete(${i})">🗑 מחק לצמיתות</button>
-        </div>
-      </div>`).join('')}
-    <div class="modal-actions" style="margin-top:16px">
-      <button class="btn btn-secondary" onclick="closeModal()">סגור</button>
-      <button class="btn btn-secondary" style="color:var(--red);border-color:var(--red)" onclick="emptyRecycleBin()">רוקן סל מחזור</button>
-    </div>`;
-  openModalEl();
+function openIngPanel(id) {
+  const i = ingredients.find(x=>x.id===id);
+  if(!i) return;
+  document.getElementById('ing-panel-name').textContent = i.name;
+  document.getElementById('ing-panel-supplier').textContent = '🚛 ' + (i.supplier||'');
+  const log = ingHistory[id] || [];
+  const logHtml = log.length ? log.slice(0,10).map(e => `
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <span style="color:var(--muted)">${e.time} · ${e.type}</span>
+      <span style="font-weight:700;color:${e.change.startsWith('+')?'var(--green)':'var(--red)'}">${e.change}</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">אין היסטוריה</div>';
+  const statusColor = i.qty===null?'var(--muted)':i.min&&i.qty<i.min?'var(--red)':'var(--green)';
+  document.getElementById('ing-panel-body').innerHTML = `
+    <div style="text-align:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px">
+      <div style="font-size:40px;font-weight:900;color:${statusColor}">${i.qty!==null?i.qty:'—'}</div>
+      <div style="font-size:13px;color:var(--muted)">${i.pack||''}</div>
+      ${i.min?`<div style="font-size:12px;color:var(--muted);margin-top:4px">סף הזמנה: ${i.min}</div>`:''}
+      ${i.expiry?`<div style="font-size:12px;color:var(--orange);margin-top:4px">📅 תוקף: ${i.expiry.split('-').reverse().join('/')}</div>`:''}
+      ${i.updatedAt?`<div style="font-size:11px;color:var(--muted);margin-top:4px">עודכן: ${new Date(i.updatedAt).toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="btn btn-primary" style="flex:1;font-size:13px" onclick="closeIngPanel();editIng(${id})">עדכן מלאי</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">📋 היסטוריית עדכונים</div>
+    ${logHtml}`;
+  document.getElementById('ing-panel').style.display = 'block';
+  document.getElementById('ing-panel-overlay').style.display = 'block';
 }
 
-function restoreRecipe(idx) {
-  const recipe = recycledRecipes.splice(idx, 1)[0];
-  delete recipe.deletedAt;
-  recipes.push(recipe);
-  closeModal();
-  renderRecipes();
-  saveToStorage();
-  showToast('↩️ המתכון שוחזר!');
-}
-
-function permanentDelete(idx) {
-  if(!confirm('למחוק לצמיתות? פעולה זו אינה הפיכה!')) return;
-  recycledRecipes.splice(idx, 1);
-  openRecycleBin(); // רענן את החלון
-  saveToStorage();
-}
-
-function emptyRecycleBin() {
-  if(!confirm('לרוקן את כל סל המחזור לצמיתות?')) return;
-  recycledRecipes = [];
-  closeModal();
-  saveToStorage();
+function closeIngPanel() {
+  document.getElementById('ing-panel').style.display = 'none';
+  document.getElementById('ing-panel-overlay').style.display = 'none';
 }
 
 function editIngDetails(id) {
@@ -2190,17 +1915,8 @@ function saveIng(id) {
   const i = ingredients.find(x=>x.id===id);
   const qv = document.getElementById('ei-qty')?.value;
   const mv = document.getElementById('ei-min')?.value;
-  const expiry = document.getElementById('ei-expiry')?.value;
-  const expiryAlert = document.getElementById('ei-expiry-alert')?.value;
-  if(qv!=='' && qv!==undefined) {
-    const oldQty = i.qty || 0;
-    const newQty = parseFloat(qv)||0;
-    i.qty = newQty;
-    logIngChange(id, 'עדכון ידני', +(newQty - oldQty).toFixed(3), newQty);
-  }
-  if(mv!=='' && mv!==undefined) i.min = parseFloat(mv)||null;
-  if(expiry) i.expiry = expiry;
-  if(expiryAlert) i.expiryAlert = expiryAlert;
+  if(qv!=='') i.qty = parseFloat(qv)||0;
+  if(mv!=='') i.min = parseFloat(mv)||null;
   i.updatedAt = new Date().toISOString();
   closeModal(); renderIngredients(); renderDashboard();
 }
@@ -2293,96 +2009,58 @@ function renderFinished() {
   }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px">אין תוצאות לפילטר הנוכחי</td></tr>`;
 }
 function buildFgRow(p) {
+  const brs = p.branches.map(bid=>{const b=BRANCHES.find(x=>x.id===bid);return`<span style="background:#FAF5EE;border-radius:4px;padding:2px 7px;font-size:11px;color:${b.color};font-weight:600">${b.name}</span>`;}).join(' ');
+  const weightCol = p.weight ? `${p.weight} גרם` : p.boxes[0]?.kgPerBox ? `${p.boxes[0].kgPerBox} ק"ג לאריזה` : 'לפי משקל';
+  const dietBadges = [
+    p.vegan?'🌱':'', p.dairy?'🥛':'', p.parve&&!p.vegan?'🥚':'', p.glutenFree?'🌾':''
+  ].filter(Boolean).join(' ');
   const storage = p.storage || 'freezer';
-  const dietBadges = [p.vegan?'🌱':'',p.dairy?'🥛':'',p.parve&&!p.vegan?'🥚':'',p.glutenFree?'🌾':''].filter(Boolean).join(' ');
 
-  // בנה תצוגת קופסאות קומפקטית
-  const boxCols = ['4L','2L','1L','בודדות','יח׳'].map(type => {
-    const box = p.boxes.find(b=>b.type===type);
-    if(!box) return `<td style="text-align:center;color:#ddd;font-size:13px">—</td>`;
-    const qty = box.qty;
-    const isLow = qty !== null && qty <= 2;
-    const isEmpty = qty === 0;
-    const color = isEmpty ? 'var(--red)' : isLow ? 'var(--orange)' : 'var(--brown)';
-    const icon = isEmpty ? '⚠️' : isLow ? '⚡' : '';
-    return `<td style="text-align:center">
-      <span style="font-size:15px;font-weight:900;color:${color}">${qty !== null ? qty : '—'}</span>
-      ${icon ? `<span style="font-size:10px">${icon}</span>` : ''}
-    </td>`;
-  }).join('');
+  const boxHtml = fgFilterBox === 'all'
+    ? `<td colspan="2"><div style="display:flex;gap:16px;flex-wrap:wrap">${p.boxes.map((b,bi)=>{
+        const unitInfo = b.units ? `<span style="font-size:10px;color:var(--muted)">(${b.units} יח׳/קופסא)</span>` : '';
+        return `<div style="display:flex;align-items:center;gap:6px">
+          <span style="background:${b.type==='4L'?'#E8F5E9':b.type==='2L'?'var(--blue-light)':'#FAF5EE'};color:${b.type==='4L'?'var(--green)':b.type==='2L'?'var(--blue)':'var(--brown-mid)'};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700">${b.type}</span>
+          ${unitInfo}
+          <strong style="color:${b.qty!==null&&b.qty<=2?'var(--red)':'inherit'}">${b.qty!==null?b.qty:'—'}</strong>
+          ${b.qty!==null&&b.qty<=2?'<span style="font-size:10px;color:var(--red)">⚠</span>':''}
+          ${b.note?`<span style="font-size:10px;color:var(--muted)">${b.note}</span>`:''}
+        </div>`;
+      }).join('')}</div></td>`
+    : `<td>${p.boxes.filter(b=>b.type===fgFilterBox).map((b)=>`
+        <div style="display:flex;align-items:center;gap:6px">
+          <strong>${b.qty!==null?b.qty:'—'}</strong>
+        </div>`).join('')}</td><td></td>`;
 
-  const totalUnits = p.boxes.reduce((s,b)=>s+(b.qty&&b.units?b.qty*b.units:0),0);
+  // חישוב סה"כ יחידות
+  const totalUnits = p.boxes.reduce((sum, b) => {
+    if(!b.qty) return sum;
+    return sum + (b.units ? b.qty * b.units : b.qty);
+  }, 0);
+  // בנה תיאור לפי קופסאות
+  const boxSummary = p.boxes.filter(b=>b.qty).map(b => {
+    if(b.units) return `${b.qty} ${b.type==='בודדות'?'בודדות':'אריזות'} × ${b.units} יח׳`;
+    return `${b.qty} אריזות`;
+  }).join(' | ');
+  const totalStr = boxSummary
+    ? `<span style="font-size:11px;color:var(--muted);margin-right:6px">${boxSummary}${totalUnits>0?` = <strong style="color:var(--brown)">${Math.round(totalUnits)} יח׳</strong>`:''}</span>`
+    : '';
 
-  return `<tr onclick="openFgPanel(${p.id})" style="cursor:pointer;transition:background .15s" onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
+  return `<tr>
     <td>
-      <div style="font-weight:700;font-size:13px">${p.name} ${dietBadges?`<span style="font-size:11px">${dietBadges}</span>`:''}</div>
-      ${totalUnits>0?`<div style="font-size:11px;color:var(--muted)">סה״כ ${Math.round(totalUnits)} יח׳</div>`:''}
+      <strong>${p.name}</strong>${dietBadges?` <span style="font-size:11px">${dietBadges}</span>`:''}
+      <br>${totalStr}
     </td>
-    ${boxCols}
+    <td style="font-size:13px;color:var(--muted)">${weightCol}</td>
+    ${boxHtml}
+    <td>${brs}</td>
     <td>
-      <button class="act-btn" onclick="event.stopPropagation();openLabelForProduct('${p.name}','${storage}')">🏷️</button>
-      <button class="act-btn" onclick="event.stopPropagation();editFgProduct(${p.id})">✏️</button>
+      <button class="act-btn" onclick="openLabelForProduct('${p.name}','${storage}')">🏷️ תווית</button>
+      <button class="act-btn" onclick="editFgProduct(${p.id})">✏️ ערוך</button>
     </td>
   </tr>`;
 }
-
-
 function chFg(pid,bi,d){const p=finishedGoods.find(x=>x.id===pid);p.boxes[bi].qty=Math.max(0,(p.boxes[bi].qty||0)+d);renderFinished();}
-
-function openFgPanel(id) {
-  const p = finishedGoods.find(x=>x.id===id);
-  if(!p) return;
-
-  const storage = p.storage==='freezer'?'❄️ מקפיא':p.storage==='fridge'?'🧊 מקרר':'🏪 מחסן';
-  const dietBadges = [p.vegan?'🌱 טבעוני':'',p.dairy?'🥛 חלבי':'',p.parve&&!p.vegan?'🥚 פרווה':'',p.glutenFree?'🌾 ללא גלוטן':''].filter(Boolean).join(' · ');
-  const brs = (p.branches||[]).map(bid=>{const b=BRANCHES.find(x=>x.id===bid);return b?`<span style="background:#FAF5EE;border-radius:4px;padding:2px 8px;font-size:12px;color:${b.color};font-weight:600">${b.name}</span>`:''}).join(' ');
-
-  const totalUnits = p.boxes.reduce((s,b)=>s+(b.qty&&b.units?b.qty*b.units:0),0);
-
-  const boxRows = p.boxes.map(b => {
-    const qty = b.qty;
-    const isLow = qty !== null && qty <= 2;
-    const isEmpty = qty === 0;
-    const color = isEmpty?'var(--red)':isLow?'var(--orange)':'var(--green)';
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-weight:700;font-size:14px">${b.type}</div>
-        <div style="font-size:11px;color:var(--muted)">${b.units?b.units+' יח׳/קופסא':''}</div>
-      </div>
-      <div style="text-align:left">
-        <div style="font-size:22px;font-weight:900;color:${color}">${qty!==null?qty:'—'}</div>
-        <div style="font-size:11px;color:var(--muted)">${qty&&b.units?'= '+(qty*b.units)+' יח׳':''}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('panel-name').textContent = p.name;
-  document.getElementById('panel-badges').textContent = storage + (dietBadges?' · '+dietBadges:'');
-  document.getElementById('panel-content').innerHTML = `
-    ${p.weight?`<div style="font-size:13px;color:var(--muted);margin-bottom:16px">משקל: ${p.weight} גרם</div>`:''}
-    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase">קופסאות במלאי</div>
-    ${boxRows}
-    ${totalUnits>0?`<div style="margin-top:12px;padding:12px;background:var(--bg);border-radius:8px;text-align:center">
-      <div style="font-size:12px;color:var(--muted)">סה"כ יחידות</div>
-      <div style="font-size:28px;font-weight:900;color:var(--brown)">${Math.round(totalUnits)}</div>
-    </div>`:''}
-    <div style="margin-top:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">סניפים</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px">${brs}</div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:20px">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeFgPanel();editFgProduct(${id})">✏️ ערוך</button>
-      <button class="btn btn-secondary" style="flex:1" onclick="closeFgPanel();openLabelForProduct('${p.name}','${p.storage||'freezer'}')">🏷️ תווית</button>
-    </div>`;
-
-  document.getElementById('fg-panel').style.display = 'block';
-  document.getElementById('fg-panel-overlay').style.display = 'block';
-}
-
-function closeFgPanel() {
-  document.getElementById('fg-panel').style.display = 'none';
-  document.getElementById('fg-panel-overlay').style.display = 'none';
-}
 
 function editFgProduct(id) {
   const p = finishedGoods.find(x=>x.id===id);
@@ -3409,11 +3087,7 @@ function submitProduction() {
     }
   });
 
-  // עדכן תכנון שבועי אוטומטית
-  if(weeklyPlan) {
-    const planItem = weeklyPlan.items.find(i=>i.recipeId===rid);
-    if(planItem) planItem.doneBatches = (planItem.doneBatches||0) + prodQty;
-  }
+  // עדכן קופסאות במוצרים סופיים
   const fg = recipe.fgId ? finishedGoods.find(p=>p.id===recipe.fgId) : finishedGoods.find(p=>p.name===recipe.name);
   if(fg && fg.boxes) {
     fg.boxes.forEach((b,bi) => {
@@ -3491,57 +3165,8 @@ function openModal(type){
     </div>
     <div class="form-group"><label>ספק</label><select id="ni-sup">${suppliers.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">ביטול</button><button class="btn btn-primary" onclick="saveNewIng()">הוסף</button></div>`;}
-  if(type==='add-fg'){h=`<h3>+ מוצר חדש</h3>
-    <div class="form-group"><label>שם המוצר</label><input type="text" id="nfg-name" placeholder="לדוגמה: עוגת שוקולד"></div>
-    <div class="form-row">
-      <div class="form-group"><label>משקל (גרם)</label><input type="number" id="nfg-weight" placeholder="אופציונלי"></div>
-      <div class="form-group"><label>אחסון</label>
-        <select id="nfg-storage" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-          <option value="freezer">❄️ מקפיא</option>
-          <option value="fridge">🧊 מקרר</option>
-          <option value="shelf">🏪 מחסן</option>
-        </select>
-      </div>
-    </div>
-    <div class="form-group"><label>קטגוריה</label>
-      <select id="nfg-cat" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-        <option>עוגיות</option><option>עוגות בחושות</option><option>קרמים</option><option>פירות</option><option>אחר</option><option>מחסן</option><option>מקרר</option>
-      </select>
-    </div>
-    <div class="form-group"><label>סוג קופסא וכמות יח׳ לקופסא</label>
-      <div style="display:flex;gap:8px">
-        <select id="nfg-boxtype" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-          <option>4L</option><option>2L</option><option>יח׳</option><option>1L</option>
-        </select>
-        <input type="number" id="nfg-units" placeholder="יח׳ בקופסא" style="flex:1;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-primary" onclick="saveNewFg()">הוסף מוצר</button>
-    </div>`;}
   document.getElementById('modal-body').innerHTML=h;
   openModalEl();
-}
-
-function saveNewFg() {
-  const name = document.getElementById('nfg-name').value.trim();
-  if(!name) { alert('הכנס שם מוצר'); return; }
-  const weight = document.getElementById('nfg-weight').value ? parseInt(document.getElementById('nfg-weight').value) : null;
-  const storage = document.getElementById('nfg-storage').value;
-  const category = document.getElementById('nfg-cat').value;
-  const boxType = document.getElementById('nfg-boxtype').value;
-  const units = document.getElementById('nfg-units').value ? parseInt(document.getElementById('nfg-units').value) : null;
-  const newId = Math.max(...finishedGoods.map(p=>p.id)) + 1;
-  finishedGoods.push({
-    id: newId, name, weight, category,
-    group: 'other', storage,
-    branches: ['betzalel','shuk','beer','modiin'],
-    boxes: [{type: boxType, units, qty: null}]
-  });
-  closeModal();
-  renderFinished();
-  saveToStorage();
 }
 function saveNewIng(){
   const name=document.getElementById('ni-name').value.trim();if(!name)return;
@@ -3682,685 +3307,7 @@ function renderNutrPreview(product, data, serving) {
     </div>`;
 }
 
-// ===================== WEEKLY PLAN =====================
-
-const WEEK_DAYS = ['א׳ (ראשון)', 'ב׳ (שני)', 'ג׳ (שלישי)', 'ד׳ (רביעי)', 'ה׳ (חמישי)', 'ו׳ (שישי)', 'ש׳ (שבת)'];
-
-function getWeekRange() {
-  const now = new Date();
-  const day = now.getDay();
-  const sun = new Date(now); sun.setDate(now.getDate() - day);
-  const sat = new Date(sun); sat.setDate(sun.getDate() + 6);
-  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-  // מחזיר גם תאריך לכל יום
-  const days = Array.from({length:7}, (_,i) => {
-    const d = new Date(sun); d.setDate(sun.getDate()+i);
-    return fmt(d);
-  });
-  return {start: fmt(sun), end: fmt(sat), days};
-}
-
-function switchWeekTab(tab, el) {
-  currentWeekTab = tab;
-  // עדכן סגנון כפתורים
-  ['list','days','shop'].forEach(t => {
-    const btn = document.getElementById('wtab-'+t);
-    if(btn) {
-      if(t===tab) {
-        btn.style.background = 'var(--brown)';
-        btn.style.color = '#fff';
-        btn.style.borderColor = 'var(--brown)';
-      } else {
-        btn.style.background = 'var(--white)';
-        btn.style.color = 'var(--brown)';
-        btn.style.borderColor = 'var(--border)';
-      }
-    }
-  });
-  document.getElementById('wpane-list').style.display = tab==='list' ? 'block' : 'none';
-  document.getElementById('wpane-days').style.display = tab==='days' ? 'block' : 'none';
-  document.getElementById('wpane-shop').style.display = tab==='shop' ? 'block' : 'none';
-  if(tab==='shop') renderShoppingList();
-  if(tab==='days') renderDaysView();
-  if(tab==='list') renderWeeklyList();
-}
-
-function renderWeeklyPage() {
-  const range = getWeekRange();
-  document.getElementById('weekly-period').textContent = `שבוע ${range.start} — ${range.end}`;
-  if(!weeklyPlan) {
-    document.getElementById('weekly-stats').style.display = 'none';
-    document.getElementById('wpane-list').innerHTML = `
-      <div class="card" style="text-align:center;padding:40px;color:var(--muted)">
-        <div style="font-size:48px;margin-bottom:12px">📅</div>
-        <div style="font-size:15px;font-weight:700;margin-bottom:8px">אין תכנון שבועי פעיל</div>
-        <button class="btn btn-primary" style="margin-top:8px" onclick="openNewWeekModal()">+ תכנון חדש</button>
-      </div>`;
-    document.getElementById('wpane-days').innerHTML = '';
-    document.getElementById('wpane-shop').innerHTML = '';
-    return;
-  }
-  updateWeeklyStats();
-  if(currentWeekTab==='list') renderWeeklyList();
-  if(currentWeekTab==='days') renderDaysView();
-  if(currentWeekTab==='shop') renderShoppingList();
-}
-
-function updateWeeklyStats() {
-  if(!weeklyPlan) return;
-  const items = weeklyPlan.items;
-  const done    = items.filter(i=>i.doneBatches>=i.targetBatches).length;
-  const partial = items.filter(i=>i.doneBatches>0&&i.doneBatches<i.targetBatches).length;
-  const missing = items.filter(i=>i.doneBatches===0).length;
-  document.getElementById('weekly-stats').style.display = 'grid';
-  document.getElementById('wp-total').textContent   = items.length;
-  document.getElementById('wp-done').textContent    = done;
-  document.getElementById('wp-partial').textContent = partial;
-  document.getElementById('wp-missing').textContent = missing;
-}
-
-function renderWeeklyList() {
-  if(!weeklyPlan) return;
-  const el = document.getElementById('wpane-list');
-  el.innerHTML = `<div class="card">
-    <div class="card-header">
-      <div class="card-title">רשימת ייצור שבועית</div>
-      <div style="display:flex;gap:8px">
-        <span style="font-size:12px;color:var(--muted);align-self:center">גרור פריט ללוח השבועי ←</span>
-        <button class="btn btn-secondary" style="font-size:12px" onclick="addCustomItem()">+ פריט מותאם</button>
-      </div>
-    </div>
-    ${weeklyPlan.items.map((item,idx) => {
-      const pct = item.targetBatches > 0 ? Math.round((item.doneBatches/item.targetBatches)*100) : 0;
-      const color = pct>=100?'var(--green)':pct>0?'var(--orange)':'var(--red)';
-      const emoji = pct>=100?'✅':pct>0?'⚠️':'❌';
-      const dayLabel = item.day !== undefined ? WEEK_DAYS[item.day] : '—';
-      return `<div draggable="true" ondragstart="dragItem(event,${idx})"
-        style="padding:14px 20px;border-bottom:1px solid var(--border);cursor:grab;transition:background .15s"
-        onmouseover="this.style.background='#FAF5EE'" onmouseout="this.style.background=''">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:16px;opacity:.4">⠿</span>
-            <span style="font-size:18px">${emoji}</span>
-            <div>
-              <div style="font-weight:700">${item.name}</div>
-              <div style="font-size:11px;color:var(--muted)">${item.targetBatches} ${item.unit} · יום: ${dayLabel}</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:13px;color:var(--muted)">${item.doneBatches}/${item.targetBatches}</span>
-            <button class="act-btn" onclick="openUpdateProgress(${idx})">עדכן</button>
-            <button class="act-btn" onclick="assignDay(${idx})">📆</button>
-            <button class="act-btn danger" onclick="removeWeekItem(${idx})">🗑</button>
-          </div>
-        </div>
-        <div style="background:#F5F5F5;border-radius:6px;height:6px;overflow:hidden">
-          <div style="height:100%;width:${Math.min(100,pct)}%;background:${color};border-radius:6px"></div>
-        </div>
-        ${item.reason?`<div style="font-size:12px;color:var(--muted);margin-top:4px">💬 ${item.reason}</div>`:''}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-function renderDaysView() {
-  if(!weeklyPlan) return;
-  const el = document.getElementById('wpane-days');
-  const range = getWeekRange();
-  const byDay = {};
-  WEEK_DAYS.forEach((_,i) => byDay[i] = []);
-  const unassigned = [];
-  weeklyPlan.items.forEach((item,idx) => {
-    if(item.day !== undefined) byDay[item.day].push({item,idx});
-    else unassigned.push({item,idx});
-  });
-
-  el.innerHTML = `
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center">
-      גרור פריטים מ"רשימת ייצור" לכל יום — או לחץ 📆 בכל פריט
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
-      ${WEEK_DAYS.map((day,i) => `
-        <div class="card" style="min-height:120px"
-          ondragover="event.preventDefault();this.style.outline='2px dashed var(--brown)'"
-          ondragleave="this.style.outline=''"
-          ondrop="dropOnDay(event,${i});this.style.outline=''">
-          <div style="padding:10px 14px;background:var(--brown);color:#fff">
-            <div style="font-weight:700;font-size:13px">${day}</div>
-            <div style="font-size:11px;opacity:.7">${range.days[i]}</div>
-          </div>
-          <div style="padding:8px" id="day-items-${i}">
-            ${byDay[i].length ? byDay[i].map(({item,idx}) => {
-              const pct = Math.round((item.doneBatches/item.targetBatches)*100);
-              const emoji = pct>=100?'✅':pct>0?'⚠️':'⬜';
-              return `<div draggable="true" ondragstart="dragItem(event,${idx})"
-                style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border);font-size:12px;cursor:grab">
-                <span>${emoji} ${item.name}</span>
-                <div style="display:flex;align-items:center;gap:4px">
-                  <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
-                  <button onclick="openUpdateProgress(${idx})" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--brown)">✏️</button>
-                  <button onclick="setItemDay(${idx},undefined)" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted)" title="הסר מיום">✕</button>
-                </div>
-              </div>`;
-            }).join('') : `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;border:2px dashed var(--border);border-radius:8px;margin:4px">גרור לכאן</div>`}
-          </div>
-        </div>`).join('')}
-      ${unassigned.length ? `
-        <div class="card" style="min-height:120px;border:2px dashed var(--border)">
-          <div style="padding:10px 14px;background:#F5F5F5;font-weight:700;font-size:13px;color:var(--muted)">📋 לא שובץ</div>
-          <div style="padding:8px">
-            ${unassigned.map(({item,idx}) => `
-              <div draggable="true" ondragstart="dragItem(event,${idx})"
-                style="font-size:12px;padding:6px 4px;border-bottom:1px solid var(--border);cursor:grab;display:flex;justify-content:space-between">
-                <span>⬜ ${item.name}</span>
-                <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
-              </div>`).join('')}
-          </div>
-        </div>` : ''}
-    </div>`;
-
-  el.innerHTML = `
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;text-align:center">
-      גרור פריטים מ"רשימת ייצור" לכל יום — או לחץ 📆 בכל פריט
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px">
-      ${WEEK_DAYS.map((day,i) => `
-        <div class="card" style="min-height:120px"
-          ondragover="event.preventDefault();this.style.outline='2px dashed var(--brown)'"
-          ondragleave="this.style.outline=''"
-          ondrop="dropOnDay(event,${i});this.style.outline=''">
-          <div style="padding:10px 14px;background:var(--brown);color:#fff;font-weight:700;font-size:13px">${day}</div>
-          <div style="padding:8px" id="day-items-${i}">
-            ${byDay[i].length ? byDay[i].map(({item,idx}) => {
-              const pct = Math.round((item.doneBatches/item.targetBatches)*100);
-              const emoji = pct>=100?'✅':pct>0?'⚠️':'⬜';
-              return `<div draggable="true" ondragstart="dragItem(event,${idx})"
-                style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--border);font-size:12px;cursor:grab">
-                <span>${emoji} ${item.name}</span>
-                <div style="display:flex;align-items:center;gap:4px">
-                  <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
-                  <button onclick="openUpdateProgress(${idx})" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--brown)">✏️</button>
-                  <button onclick="setItemDay(${idx},undefined)" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--muted)" title="הסר מיום">✕</button>
-                </div>
-              </div>`;
-            }).join('') : `<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px;border:2px dashed var(--border);border-radius:8px;margin:4px">גרור לכאן</div>`}
-          </div>
-        </div>`).join('')}
-      ${unassigned.length ? `
-        <div class="card" style="min-height:120px;border:2px dashed var(--border)">
-          <div style="padding:10px 14px;background:#F5F5F5;font-weight:700;font-size:13px;color:var(--muted)">📋 לא שובץ</div>
-          <div style="padding:8px">
-            ${unassigned.map(({item,idx}) => `
-              <div draggable="true" ondragstart="dragItem(event,${idx})"
-                style="font-size:12px;padding:6px 4px;border-bottom:1px solid var(--border);cursor:grab;display:flex;justify-content:space-between">
-                <span>⬜ ${item.name}</span>
-                <span style="color:var(--muted)">${item.targetBatches}${item.unit[0]}</span>
-              </div>`).join('')}
-          </div>
-        </div>` : ''}
-    </div>`;
-}
-
-function renderShoppingList() {
-  if(!weeklyPlan) return;
-  const el = document.getElementById('wpane-shop');
-
-  // חשב מה חסר
-  const needed = {};
-  weeklyPlan.items.forEach(item => {
-    const recipe = recipes.find(r=>r.id===item.recipeId);
-    if(!recipe || !recipe.ings) return;
-    const remaining = item.targetBatches - item.doneBatches;
-    if(remaining <= 0) return;
-    recipe.ings.forEach(ing => {
-      if(!needed[ing.ingId]) needed[ing.ingId] = {name:ing.name, unit:ing.unit, total:0, supplier:''};
-      needed[ing.ingId].total += (ing.qty||0) * remaining;
-      if(!needed[ing.ingId].supplier) {
-        const ingData = ingredients.find(i=>i.id===ing.ingId);
-        if(ingData) needed[ing.ingId].supplier = ingData.supplier||'';
-      }
-    });
-  });
-
-  // מיין לפי: חסר, מספיק
-  const missing_arr = [], ok = [], unknown = [];
-  Object.entries(needed).forEach(([id, info]) => {
-    const ing = ingredients.find(i=>i.id===parseInt(id));
-    const have = ing?.qty ?? null;
-    if(have === null) unknown.push({...info, have: '?', deficit: info.total});
-    else if(have < info.total) missing_arr.push({...info, have, deficit: +(info.total-have).toFixed(3)});
-    else ok.push({...info, have});
-  });
-
-  // קבץ חסרים לפי ספק
-  const bySupplier = {};
-  [...missing_arr, ...unknown].forEach(item => {
-    const sup = item.supplier || 'אחר';
-    if(!bySupplier[sup]) bySupplier[sup] = [];
-    bySupplier[sup].push(item);
-  });
-
-  let html = '';
-
-  if(Object.keys(bySupplier).length) {
-    html += `<div class="card" style="margin-bottom:16px">
-      <div class="card-header" style="background:var(--red-light)">
-        <div class="card-title" style="color:var(--red)">🛒 רשימת קניות — מה חסר</div>
-        <button class="btn btn-secondary" style="font-size:12px" onclick="printShoppingList()">🖨️ הדפס</button>
-      </div>
-      ${Object.entries(bySupplier).map(([sup, items]) => `
-        <div style="padding:12px 20px;border-bottom:2px solid var(--border)">
-          <div style="font-weight:700;font-size:13px;color:var(--brown-mid);margin-bottom:8px">🚛 ${sup}</div>
-          ${items.map(i => `
-            <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
-              <span>${i.name}</span>
-              <span style="color:var(--red);font-weight:700">חסר ${i.deficit}${i.unit}</span>
-            </div>`).join('')}
-        </div>`).join('')}
-    </div>`;
-  }
-
-  if(ok.length) {
-    html += `<div class="card">
-      <div class="card-header"><div class="card-title" style="color:var(--green)">✅ יש מספיק</div></div>
-      ${ok.map(i => `
-        <div style="display:flex;justify-content:space-between;padding:8px 20px;border-bottom:1px solid var(--border);font-size:13px">
-          <span>${i.name}</span>
-          <span style="color:var(--green)">יש ${i.have}, צריך ${i.total}${i.unit}</span>
-        </div>`).join('')}
-    </div>`;
-  }
-
-  if(!html) html = `<div class="card" style="text-align:center;padding:30px;color:var(--muted)">
-    <div style="font-size:32px">✅</div><div>הכל במלאי!</div>
-  </div>`;
-
-  el.innerHTML = html;
-}
-
-function printShoppingList() {
-  const el = document.getElementById('wpane-shop');
-  const w = window.open('','_blank');
-  w.document.write('<html dir="rtl"><head><meta charset="UTF-8"><title>רשימת קניות</title>'
-    +'<style>body{font-family:Arial;direction:rtl;padding:20px} table{width:100%;border-collapse:collapse} td,th{border:1px solid #ccc;padding:8px}</style></head>'
-    +'<body><h2>🛒 רשימת קניות — Bake House Roasters</h2>'
-    +el.innerHTML+'</body></html>');
-  w.print();
-}
-
-function openNewWeekModal() {
-  // רק מתכונים שלא בסל מחזור
-  const activeRecipes = recipes.filter(r => !recycledRecipes.find(x=>x.id===r.id));
-  const hasExisting = weeklyPlan && weeklyPlan.items.length > 0;
-
-  const recipeRows = activeRecipes.map(r => {
-    const existing = weeklyPlan?.items.find(i=>i.recipeId===r.id);
-    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-      <div>
-        <div style="font-size:13px;font-weight:600">${r.name}</div>
-        <div style="font-size:11px;color:var(--muted)">${r.portions||''} ${r.portionLabel||'יח׳'} לנגלה${existing?` · כבר מתוכנן: ${existing.targetBatches} נגלות`:''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <input type="number" id="wp-r-${r.id}" min="0" value="${existing?existing.targetBatches:0}"
-          style="width:55px;padding:4px;border:1.5px solid var(--border);border-radius:6px;text-align:center;font-family:'Heebo',sans-serif;font-size:14px">
-        <span style="font-size:11px;color:var(--muted)">נגלות</span>
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('modal-body').innerHTML = `
-    <h3>📅 ${hasExisting ? 'עדכון תכנון שבועי' : 'תכנון שבועי חדש'}</h3>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:12px">
-      ${hasExisting ? 'הזן כמויות — פריטים קיימים יתעדכנו, חדשים יתווספו. הזן 0 להסרה.' : 'הזן כמות נגלות לכל מתכון:'}
-    </div>
-    <div style="max-height:350px;overflow-y:auto;margin-bottom:16px">${recipeRows}</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-primary" onclick="saveWeeklyPlan()">${hasExisting ? 'עדכן תכנון' : 'צור תכנון ← בדוק מלאי'}</button>
-    </div>`;
-  openModalEl();
-}
-
-function saveWeeklyPlan() {
-  const activeRecipes = recipes.filter(r => !recycledRecipes.find(x=>x.id===r.id));
-  const range = getWeekRange();
-
-  if(!weeklyPlan) {
-    // תכנון חדש
-    weeklyPlan = {id:Date.now(), startDate:range.start, endDate:range.end, items:[]};
-  }
-
-  // עדכן פריטים קיימים והוסף חדשים
-  activeRecipes.forEach(r => {
-    const val = parseInt(document.getElementById('wp-r-'+r.id)?.value||0);
-    const existingIdx = weeklyPlan.items.findIndex(i=>i.recipeId===r.id);
-    if(val > 0) {
-      if(existingIdx > -1) {
-        // עדכן כמות קיימת
-        weeklyPlan.items[existingIdx].targetBatches = val;
-      } else {
-        // הוסף חדש
-        weeklyPlan.items.push({
-          recipeId: r.id, name: r.name, unit: 'נגלות',
-          targetBatches: val, doneBatches: 0,
-          day: undefined, reason: '', isCustom: false
-        });
-      }
-    } else if(val === 0 && existingIdx > -1) {
-      // הסר אם הוזן 0
-      weeklyPlan.items.splice(existingIdx, 1);
-    }
-  });
-
-  if(!weeklyPlan.items.length) { alert('יש להזין לפחות מתכון אחד'); return; }
-
-  closeModal();
-  renderWeeklyPage();
-  setTimeout(() => switchWeekTab('shop', document.getElementById('wtab-shop')), 300);
-  saveToStorage();
-}
-
-function addCustomItem() {
-  document.getElementById('modal-body').innerHTML = `
-    <h3>+ פריט מותאם</h3>
-    <div class="form-group"><label>שם הפריט</label><input type="text" id="ci-name" placeholder="לדוגמה: ריבת אגסים"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="form-group" style="margin:0"><label>כמות</label><input type="number" id="ci-qty" min="1" value="1"></div>
-      <div class="form-group" style="margin:0"><label>יחידה</label>
-        <select id="ci-unit" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-          <option>נגלות</option><option>קופסאות</option><option>ק"ג</option><option>יח׳</option><option>ליטר</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-primary" onclick="saveCustomItem()">הוסף</button>
-    </div>`;
-  openModalEl();
-}
-
-function saveCustomItem() {
-  const name = document.getElementById('ci-name').value.trim();
-  const qty  = parseInt(document.getElementById('ci-qty').value)||1;
-  const unit = document.getElementById('ci-unit').value;
-  if(!name) { alert('הכנס שם'); return; }
-  if(!weeklyPlan) { alert('צור תכנון שבועי קודם'); return; }
-  weeklyPlan.items.push({recipeId:null, name, unit, targetBatches:qty, doneBatches:0, day:undefined, reason:'', isCustom:true});
-  closeModal();
-  renderWeeklyPage();
-  saveToStorage();
-}
-
-function archiveWeek() {
-  if(!weeklyPlan) { alert('אין תכנון פעיל לסיים'); return; }
-  if(!confirm('לסיים את שבוע זה ולפתוח תכנון חדש?\nהשבוע הנוכחי יישמר בהיסטוריה.')) return;
-  weeklyHistory.unshift(weeklyPlan);
-  weeklyPlan = null;
-  renderWeeklyPage();
-  saveToStorage();
-  showToast('📦 השבוע הועבר לארכיון!');
-}
-
-function dragItem(event, idx) {
-  event.dataTransfer.setData('text/plain', idx);
-  event.dataTransfer.effectAllowed = 'move';
-}
-
-function dropOnDay(event, dayIdx) {
-  event.preventDefault();
-  const itemIdx = parseInt(event.dataTransfer.getData('text/plain'));
-  if(!isNaN(itemIdx) && weeklyPlan && weeklyPlan.items[itemIdx]) {
-    weeklyPlan.items[itemIdx].day = dayIdx;
-    renderWeeklyList();
-    renderDaysView();
-    saveToStorage();
-  }
-}
-
-function assignDay(idx) {
-  const item = weeklyPlan.items[idx];
-  document.getElementById('modal-body').innerHTML = `
-    <h3>📆 שיבוץ יום — ${item.name}</h3>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px">
-      ${WEEK_DAYS.map((day,i) => `
-        <button onclick="setItemDay(${idx},${i})" class="btn ${item.day===i?'btn-primary':'btn-secondary'}">${day}</button>
-      `).join('')}
-      <button onclick="setItemDay(${idx},undefined)" class="btn btn-secondary">ללא שיבוץ</button>
-    </div>`;
-  openModalEl();
-}
-
-function setItemDay(idx, day) {
-  weeklyPlan.items[idx].day = day;
-  closeModal();
-  renderWeeklyPage();
-  saveToStorage();
-}
-
-function removeWeekItem(idx) {
-  if(!confirm('למחוק פריט זה מהתכנון?')) return;
-  weeklyPlan.items.splice(idx, 1);
-  if(!weeklyPlan.items.length) weeklyPlan = null;
-  renderWeeklyPage();
-  saveToStorage();
-}
-
-function openUpdateProgress(idx) {
-  const item = weeklyPlan.items[idx];
-  document.getElementById('modal-body').innerHTML = `
-    <h3>עדכון התקדמות</h3>
-    <div style="font-size:15px;font-weight:700;color:var(--brown);margin-bottom:16px">${item.name}</div>
-    <div class="form-group">
-      <label>כמה בוצע (יעד: ${item.targetBatches} ${item.unit})</label>
-      <input type="number" id="prog-done" min="0" value="${item.doneBatches}" style="font-size:20px;font-weight:700;text-align:center">
-    </div>
-    <div class="form-group">
-      <label>סיבה אם לא הושלם</label>
-      <select id="prog-reason-sel" onchange="document.getElementById('prog-reason').value=this.value" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif;margin-bottom:8px">
-        <option value="">בחר...</option>
-        <option>חסר חומרי גלם</option><option>לא היה זמן</option>
-        <option>עדיפות אחרת</option><option>בעיה טכנית</option><option>אחר</option>
-      </select>
-      <input type="text" id="prog-reason" value="${item.reason||''}" placeholder="פרט...">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-primary" onclick="saveProgress(${idx})">שמור</button>
-    </div>`;
-  openModalEl();
-}
-
-function saveProgress(idx) {
-  const done   = parseInt(document.getElementById('prog-done').value)||0;
-  const reason = document.getElementById('prog-reason').value.trim();
-  weeklyPlan.items[idx].doneBatches = done;
-  weeklyPlan.items[idx].reason = reason;
-  closeModal(); renderWeeklyPage(); saveToStorage();
-}
-
-function showWeeklySummary() {
-  const plans = weeklyPlan ? [weeklyPlan, ...weeklyHistory] : weeklyHistory;
-  if(!plans.length) { alert('אין היסטוריה עדיין'); return; }
-  const html = plans.map(plan => {
-    const done    = plan.items.filter(i=>i.doneBatches>=i.targetBatches).length;
-    const partial = plan.items.filter(i=>i.doneBatches>0&&i.doneBatches<i.targetBatches).length;
-    const missing = plan.items.filter(i=>i.doneBatches===0).length;
-    const pct = Math.round((done/plan.items.length)*100);
-    return `<div style="margin-bottom:14px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <strong>שבוע ${plan.startDate} — ${plan.endDate}</strong>
-        <span style="font-weight:700;color:${pct>=80?'var(--green)':pct>=50?'var(--orange)':'var(--red)'}">${pct}%</span>
-      </div>
-      <div style="display:flex;gap:12px;font-size:12px;margin-bottom:6px">
-        <span style="color:var(--green)">✅ ${done}</span>
-        <span style="color:var(--orange)">⚠️ ${partial}</span>
-        <span style="color:var(--red)">❌ ${missing}</span>
-      </div>
-      ${plan.items.filter(i=>i.reason).map(i=>`<div style="font-size:12px;color:var(--muted)">• ${i.name}: ${i.reason}</div>`).join('')}
-    </div>`;
-  }).join('');
-  document.getElementById('modal-body').innerHTML = `
-    <h3>📊 היסטוריה שבועית</h3>
-    <div style="max-height:400px;overflow-y:auto">${html}</div>
-    <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">סגור</button></div>`;
-  openModalEl();
-}
-
-let orderFilter = 'all';
-
-const ORDER_STATUSES = {
-  'ממתינה':  {color:'var(--orange)', bg:'#FFF3E0'},
-  'בהכנה':   {color:'var(--blue)',   bg:'#E3F2FD'},
-  'מוכנה':   {color:'var(--green)',  bg:'#E8F5E9'},
-  'נשלחה':   {color:'var(--muted)', bg:'#F5F5F5'},
-};
-
-function setOrderFilter(f, el) {
-  orderFilter = f;
-  document.querySelectorAll('#page-orders .pill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  renderOrders();
-}
-
-function renderOrders() {
-  const filtered = orderFilter === 'all' ? orders : orders.filter(o=>o.branch===orderFilter);
-  const el = document.getElementById('orders-list');
-
-  // Update stats
-  document.getElementById('ord-pending').textContent   = orders.filter(o=>o.status==='ממתינה').length;
-  document.getElementById('ord-preparing').textContent = orders.filter(o=>o.status==='בהכנה').length;
-  document.getElementById('ord-ready').textContent     = orders.filter(o=>o.status==='מוכנה').length;
-  document.getElementById('ord-sent').textContent      = orders.filter(o=>o.status==='נשלחה').length;
-
-  if(!filtered.length) {
-    el.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--muted)">
-      <div style="font-size:48px;margin-bottom:12px">🛒</div>
-      <div>אין הזמנות ${orderFilter!=='all'?'מסניף '+orderFilter:''} עדיין</div>
-      <div style="font-size:13px;margin-top:8px">הזמנות יופיעו כאן כשיגיעו מהסניפים</div>
-    </div>`;
-    return;
-  }
-
-  el.innerHTML = filtered.map(o => {
-    const st = ORDER_STATUSES[o.status] || ORDER_STATUSES['ממתינה'];
-    const itemsHtml = (o.items||[]).map(i =>
-      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
-        <span>${i.name}</span>
-        <span style="font-weight:700;color:var(--brown)">${i.qty} ${i.unit||'קופסאות'}</span>
-      </div>`
-    ).join('');
-
-    const nextStatus = o.status==='ממתינה'?'בהכנה':o.status==='בהכנה'?'מוכנה':o.status==='מוכנה'?'נשלחה':null;
-
-    return `<div class="card" style="margin-bottom:16px;border-right:4px solid ${st.color}">
-      <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <div style="font-size:16px;font-weight:700;color:var(--brown)">${o.branch}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">📅 ${o.date} ${o.deliveryDate?'· משלוח: '+o.deliveryDate:''}</div>
-          ${o.note?`<div style="font-size:12px;color:var(--muted);margin-top:4px">💬 ${o.note}</div>`:''}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="background:${st.bg};color:${st.color};border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700">${o.status}</span>
-          ${nextStatus?`<button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="advanceOrder(${o.id})">← ${nextStatus}</button>`:''}
-          <button class="act-btn danger" onclick="deleteOrder(${o.id})">🗑</button>
-        </div>
-      </div>
-      <div style="padding:0 20px 16px">${itemsHtml}</div>
-    </div>`;
-  }).join('');
-}
-
-function advanceOrder(id) {
-  const o = orders.find(x=>x.id===id);
-  if(!o) return;
-  const statuses = ['ממתינה','בהכנה','מוכנה','נשלחה'];
-  const idx = statuses.indexOf(o.status);
-  if(idx < statuses.length-1) o.status = statuses[idx+1];
-  renderOrders();
-  saveToStorage();
-}
-
-function deleteOrder(id) {
-  if(!confirm('למחוק הזמנה זו?')) return;
-  orders = orders.filter(x=>x.id!==id);
-  renderOrders();
-  saveToStorage();
-}
-
-function openNewOrderModal() {
-  const itemsHtml = finishedGoods.map(p =>
-    `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
-      <span style="font-size:13px">${p.name}</span>
-      <input type="number" id="ord-item-${p.id}" min="0" value="" placeholder="0"
-        style="width:60px;padding:4px;border:1px solid var(--border);border-radius:6px;text-align:center;font-family:'Heebo',sans-serif">
-    </div>`
-  ).join('');
-
-  document.getElementById('modal-body').innerHTML = `
-    <h3>🛒 הזמנה חדשה</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="form-group" style="margin:0">
-        <label>סניף</label>
-        <select id="ord-branch" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-          ${BRANCHES.map(b=>`<option value="${b.name}">${b.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="form-group" style="margin:0">
-        <label>תאריך משלוח</label>
-        <input type="date" id="ord-delivery" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:8px;font-family:'Heebo',sans-serif">
-      </div>
-    </div>
-    <div class="form-group">
-      <label>הערה</label>
-      <input type="text" id="ord-note" placeholder="הערות נוספות...">
-    </div>
-    <div style="font-weight:700;font-size:13px;margin-bottom:8px">מוצרים:</div>
-    <div style="max-height:300px;overflow-y:auto;margin-bottom:16px">${itemsHtml}</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
-      <button class="btn btn-primary" onclick="saveNewOrder()">שמור הזמנה</button>
-    </div>`;
-  openModalEl();
-}
-
-function saveNewOrder() {
-  const branch = document.getElementById('ord-branch').value;
-  const deliveryDate = document.getElementById('ord-delivery').value;
-  const note = document.getElementById('ord-note').value.trim();
-  const now = new Date();
-  const pad = n=>String(n).padStart(2,'0');
-  const date = `${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
-  const items = [];
-  finishedGoods.forEach(p => {
-    const val = document.getElementById('ord-item-'+p.id)?.value;
-    if(val && parseInt(val)>0) items.push({name:p.name, qty:parseInt(val), unit:'קופסאות'});
-  });
-
-  if(!items.length) { alert('יש להזין לפחות מוצר אחד'); return; }
-
-  orders.unshift({
-    id: Date.now(),
-    branch,
-    date,
-    deliveryDate: deliveryDate ? deliveryDate.split('-').reverse().join('/') : '',
-    note,
-    status: 'ממתינה',
-    items
-  });
-
-  closeModal();
-  renderOrders();
-  saveToStorage();
-}
-
-function renderOrdersPage() {
-  renderOrders();
-}
-
-function renderOrders_nav() {
-  if(document.getElementById('page-orders')?.classList.contains('active')) renderOrders();
-}
+// ===================== LOCALSTORAGE =====================
 const LS_KEY = 'bhr-data-v1';
 
 // ===================== SUPABASE SYNC =====================
@@ -4387,18 +3334,11 @@ async function sbSet(key, value) {
 }
 
 async function syncToSupabase() {
-  const ind = document.getElementById('save-indicator');
-  if(ind) { ind.textContent = '⏳ שומר...'; ind.style.color = 'var(--muted)'; }
   const data = {
-    codeVersion: '2026-08-06',
-    ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,expiry:i.expiry,expiryAlert:i.expiryAlert,updatedAt:i.updatedAt})),
+    codeVersion: '2026-04-25',
+    ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,expiry:i.expiry,expiryAlert:i.expiryAlert})),
     finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
     nutritionData,
-    orders,
-    weeklyPlan,
-    weeklyHistory,
-    ingHistory,
-    recycledRecipes,
     savedAt: new Date().toISOString()
   };
   await sbSet('main_data', data);
@@ -4408,42 +3348,19 @@ async function syncToSupabase() {
 async function loadFromSupabase() {
   const data = await sbGet('main_data');
   if(!data) return false;
-
-  // תמיד שמור נתוני משתמש ללא קשר לגרסה
-  if(data.orders) orders = data.orders;
-  if(data.weeklyPlan) weeklyPlan = data.weeklyPlan;
-  if(data.weeklyHistory) weeklyHistory = data.weeklyHistory;
-  if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
-  if(data.recycledRecipes) {
-    recycledRecipes = data.recycledRecipes;
-    recycledRecipes.forEach(r => {
-      const idx = recipes.findIndex(x=>x.id===r.id);
-      if(idx > -1) recipes.splice(idx, 1);
+  if(data.ingredients) {
+    data.ingredients.forEach(saved => {
+      const ing = ingredients.find(i=>i.id===saved.id);
+      if(ing) { ing.qty=saved.qty; if(saved.min!==undefined&&saved.min!==null) ing.min=saved.min; if(saved.expiry) ing.expiry=saved.expiry; if(saved.expiryAlert) ing.expiryAlert=saved.expiryAlert; if(saved.updatedAt) ing.updatedAt=saved.updatedAt; }
     });
   }
-
-  // אם גרסת הקוד חדשה — טען רק נתוני משתמש, לא כמויות ישנות
-  const CODE_VERSION = '2026-08-06';
-  if(data.codeVersion && data.codeVersion >= CODE_VERSION) {
-    // גרסה תקינה — טען גם כמויות
-    if(data.ingredients) {
-      data.ingredients.forEach(saved => {
-        const ing = ingredients.find(i=>i.id===saved.id);
-        if(ing) { ing.qty=saved.qty; if(saved.updatedAt) ing.updatedAt=saved.updatedAt; }
-      });
-    }
-    if(data.finishedGoods) {
-      data.finishedGoods.forEach(saved => {
-        const fg = finishedGoods.find(p=>p.id===saved.id);
-        if(fg&&saved.boxes) saved.boxes.forEach((sb,i)=>{ if(fg.boxes[i]&&sb.qty!==undefined) fg.boxes[i].qty=sb.qty; });
-      });
-    }
-    if(data.nutritionData) Object.assign(nutritionData, data.nutritionData);
-  } else {
-    // גרסה ישנה — אפס כמויות ועדכן Supabase
-    console.log('גרסה ישנה ב-Supabase — מעדכן');
-    await syncToSupabase();
+  if(data.finishedGoods) {
+    data.finishedGoods.forEach(saved => {
+      const fg = finishedGoods.find(p=>p.id===saved.id);
+      if(fg&&saved.boxes) saved.boxes.forEach((sb,i)=>{ if(fg.boxes[i]&&sb.qty!==undefined) fg.boxes[i].qty=sb.qty; });
+    });
   }
+  if(data.nutritionData) Object.assign(nutritionData, data.nutritionData);
   const ind = document.getElementById('save-indicator');
   if(ind&&data.savedAt) ind.textContent = 'נטען: '+new Date(data.savedAt).toLocaleTimeString('he-IL');
   return true;
@@ -4463,44 +3380,6 @@ async function loadTakeLogFromSupabase() {
 setInterval(async () => {
   await loadTakeLogFromSupabase();
   renderTakeLog(false);
-}, 30000);
-
-// Auto-sync כל הנתונים כל 30 שניות
-setInterval(async () => {
-  const data = await sbGet('main_data');
-  if(!data || !data.savedAt) return;
-  const remoteSaved = new Date(data.savedAt).getTime();
-  const localSaved = new Date(localStorage.getItem('bhr-last-sync')||0).getTime();
-  if(remoteSaved > localSaved + 5000) { // 5 שניות buffer
-    if(data.ingredients) data.ingredients.forEach(saved => {
-      const ing = ingredients.find(i=>i.id===saved.id);
-      if(ing) { ing.qty=saved.qty; if(saved.updatedAt) ing.updatedAt=saved.updatedAt; }
-    });
-    if(data.finishedGoods) data.finishedGoods.forEach(saved => {
-      const fg = finishedGoods.find(p=>p.id===saved.id);
-      if(fg&&saved.boxes) saved.boxes.forEach((sb,i)=>{ if(fg.boxes[i]&&sb.qty!==undefined) fg.boxes[i].qty=sb.qty; });
-    });
-    if(data.orders) orders = data.orders;
-    if(data.weeklyPlan) weeklyPlan = data.weeklyPlan;
-    if(data.weeklyHistory) weeklyHistory = data.weeklyHistory;
-    if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
-    if(data.recycledRecipes) {
-      recycledRecipes = data.recycledRecipes;
-      recycledRecipes.forEach(r => {
-        const idx = recipes.findIndex(x=>x.id===r.id);
-        if(idx > -1) recipes.splice(idx, 1);
-      });
-    }
-    localStorage.setItem('bhr-last-sync', data.savedAt);
-    const activePage = document.querySelector('.page.active')?.id?.replace('page-','');
-    if(activePage==='dashboard') renderDashboard();
-    if(activePage==='ingredients') renderIngredients();
-    if(activePage==='finished') renderFinished();
-    if(activePage==='weekly') renderWeeklyPage();
-    if(activePage==='orders') renderOrders();
-    const ind = document.getElementById('save-indicator');
-    if(ind) { ind.textContent='🔄 עודכן'; setTimeout(()=>ind.textContent='',2000); }
-  }
 }, 30000);
 
 async function forceSyncToCloud() {
@@ -4559,10 +3438,10 @@ function loadImportFile(input) {
   input.value = '';
 }
 
-async function saveToStorage() {
+function saveToStorage() {
   try {
     const data = {
-      codeVersion: '2026-08-06',
+      codeVersion: '2026-04-25',
       ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,expiry:i.expiry,expiryAlert:i.expiryAlert,updatedAt:i.updatedAt})),
       finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
       dispatches: dispatches.map(d=>({id:d.id,branch:d.branch,status:d.status,order:d.order})),
@@ -4571,23 +3450,11 @@ async function saveToStorage() {
       deliveryDocs: deliveryDocs.map(d=>({...d})),
       allergenData: allergenData.map(a=>({id:a.id,batch:a.batch,batchDate:a.batchDate,changed:a.changed,allergens:a.allergens,prev:a.prev})),
       allergenHistory,
-      orders,
-      ingHistory,
-      weeklyPlan,
-      weeklyHistory,
-      recycledRecipes,
       savedAt: new Date().toISOString()
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
-    // סנכרן ל-Supabase — עם retry אם נכשל
-    try {
-      await syncToSupabase();
-    } catch(e) {
-      console.warn('Supabase sync failed, retrying in 5s...', e);
-      setTimeout(async () => {
-        try { await syncToSupabase(); } catch(e2) { console.warn('Retry failed:', e2); }
-      }, 5000);
-    }
+    // Sync to Supabase in background
+    syncToSupabase();
   } catch(e) { console.warn('שגיאת שמירה:', e); }
 }
 
@@ -4605,15 +3472,11 @@ function loadFromStorage() {
       return;
     }
 
-    if(data.orders) orders = data.orders;
-    if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
-    if(data.weeklyPlan) weeklyPlan = data.weeklyPlan;
-    if(data.weeklyHistory) weeklyHistory = data.weeklyHistory;
-
     if(data.ingredients) {
       data.ingredients.forEach(saved => {
         const ing = ingredients.find(i=>i.id===saved.id);
-        if(ing) {          // טוען רק שינויים שהמשתמש עשה ידנית
+        if(ing) {
+          // טוען רק שינויים שהמשתמש עשה ידנית
           if(saved.qty !== undefined) ing.qty = saved.qty;
           if(saved.min !== undefined && saved.min !== null) ing.min = saved.min;
           // שם ואריזה — רק אם המשתמש שינה (לא מהקוד)
