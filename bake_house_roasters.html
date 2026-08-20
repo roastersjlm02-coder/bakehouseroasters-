@@ -237,6 +237,8 @@ tr:hover td{background:#FDF8F3;}
 .profit-low{font-weight:700;color:var(--orange);}
 
 .filter-pill{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:'Heebo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;}
+.search-box{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:'Heebo',sans-serif;font-size:13px;color:var(--brown);min-width:180px;transition:border-color .2s;}
+.search-box:focus{outline:none;border-color:var(--gold);}
 .filter-pill:hover{border-color:var(--brown-mid);color:var(--brown);}
 .filter-pill.active{background:var(--brown);color:#fff;border-color:var(--brown);}
 .filter-pill.active.fp-כהן{background:#5D4037;border-color:#5D4037;}
@@ -433,6 +435,7 @@ tr:hover td{background:#FDF8F3;}
       <button class="filter-pill" id="fp-weiss" onclick="setIngFilter('WEISS',this)">WEISS</button>
       <div style="height:16px;width:1px;background:var(--border);margin:0 4px"></div>
       <button class="filter-pill" id="fp-az" onclick="toggleIngSort(this)" title="מיין לפי א׳-ב׳">א-ב ↕</button>
+      <input type="text" id="ing-search" class="search-box" placeholder="🔍 חיפוש חומר גלם..." oninput="setIngSearch(this.value)">
       <span id="ing-filter-count" style="font-size:12px;color:var(--muted);margin-right:auto"></span>
     </div>
     <table id="ing-table-wrap">
@@ -475,6 +478,7 @@ tr:hover td{background:#FDF8F3;}
         <button class="filter-pill" id="fg-box-4L" onclick="setFgFilter('box','4L',this)">4 ליטר</button>
         <button class="filter-pill" id="fg-box-2L" onclick="setFgFilter('box','2L',this)">2 ליטר</button>
       </div>
+      <input type="text" id="fg-search" class="search-box" placeholder="🔍 חיפוש מוצר..." oninput="setFgSearch(this.value)" style="margin-right:auto">
     </div>
     <table>
       <thead><tr><th>מוצר + סה"כ יח׳</th><th>משקל</th><th colspan="2">קופסאות (סוג | יח׳/קופסא | כמות)</th><th>סניפים</th><th>פעולות</th></tr></thead>
@@ -754,6 +758,7 @@ tr:hover td{background:#FDF8F3;}
       <button class="filter-pill" onclick="setRecipeFilter('gf',this)">🌾 ללא גלוטן</button>
       <button class="filter-pill" onclick="setRecipeFilter('gluten',this)">🌾 מכיל גלוטן</button>
       <button class="filter-pill" onclick="setRecipeFilter('nuts',this)">🥜 מכיל אגוזים</button>
+      <input type="text" id="recipe-search" class="search-box" placeholder="🔍 חיפוש מתכון..." oninput="setRecipeSearch(this.value)" style="margin-right:auto">
     </div>
   </div>
 
@@ -1818,6 +1823,8 @@ function renderTakeLog(showAll) {
 // ===================== INGREDIENTS =====================
 let ingView = 'table';
 let recipeFilter = 'all';
+let recipeSearch = '';
+function setRecipeSearch(val) { recipeSearch = val.trim(); renderRecipes(); }
 
 function setRecipeFilter(f, el) {
   recipeFilter = f;
@@ -1847,6 +1854,7 @@ function setIngView(view) {
 
 function renderIngredientsGrid() {
   let filtered = ingFilter==='all' ? ingredients : ingredients.filter(i=>i.supplier===ingFilter||i.supplier.includes(ingFilter));
+  if(ingSearch) filtered = filtered.filter(i=>i.name.includes(ingSearch));
   if(ingSort==='az') filtered = [...filtered].sort((a,b)=>a.name.localeCompare(b.name,'he'));
   if(ingSort==='za') filtered = [...filtered].sort((a,b)=>b.name.localeCompare(a.name,'he'));
   const grid = document.getElementById('ing-grid');
@@ -1907,6 +1915,12 @@ function toggleIngSort(el) {
 }
 
 let ingFilter = 'all';
+let ingSearch = '';
+function setIngSearch(val) {
+  ingSearch = val.trim();
+  if(ingView==='grid') renderIngredientsGrid();
+  else renderIngredients();
+}
 function setIngFilter(supplier, el) {
   ingFilter = supplier;
   document.querySelectorAll('.filter-pill').forEach(p=>p.classList.remove('active'));
@@ -1947,6 +1961,7 @@ function buildQtyDisplay(i) {
 
 function renderIngredients() {
   let filtered = ingFilter==='all' ? ingredients : ingredients.filter(i=>i.supplier===ingFilter || i.supplier.includes(ingFilter));
+  if(ingSearch) filtered = filtered.filter(i=>i.name.includes(ingSearch));
   if(ingSort==='az') filtered = [...filtered].sort((a,b)=>a.name.localeCompare(b.name,'he'));
   if(ingSort==='za') filtered = [...filtered].sort((a,b)=>b.name.localeCompare(a.name,'he'));
   let pending=0;
@@ -2376,6 +2391,8 @@ function saveIng(id) {
 let fgFilterProduct = 'all';
 let fgFilterBox = 'all';
 let fgFilterStorage = 'all';
+let fgSearch = '';
+function setFgSearch(val) { fgSearch = val.trim(); renderFinished(); }
 
 function setFgFilter(type, val, el) {
   if(type==='storage') {
@@ -2421,6 +2438,7 @@ function renderFinished() {
   let filteredProds = finishedGoods;
   if(fgFilterStorage !== 'all') filteredProds = filteredProds.filter(p=>p.storage===fgFilterStorage);
   if(fgFilterProduct !== 'all') filteredProds = filteredProds.filter(p=>p.name===fgFilterProduct);
+  if(fgSearch) filteredProds = filteredProds.filter(p=>p.name.includes(fgSearch));
 
   document.getElementById('fg-table').innerHTML = storageGroups.map(sg => {
     const prods = filteredProds.filter(p=>p.storage===sg.key);
@@ -3234,6 +3252,7 @@ function renderRecipes(){
   if(recipeFilter==='gf')     filtered = recipes.filter(r=>r.glutenFree);
   if(recipeFilter==='gluten') filtered = recipes.filter(r=>r.containsGluten===true);
   if(recipeFilter==='nuts')   filtered = recipes.filter(r=>r.nuts&&r.nuts.length>0);
+  if(recipeSearch) filtered = filtered.filter(r=>r.name.includes(recipeSearch));
 
   const el = document.getElementById('recipe-list');
   renderRecycleBin();
@@ -3675,11 +3694,15 @@ function openModal(type){
 }
 function saveNewIng(){
   const name=document.getElementById('ni-name').value.trim();if(!name)return;
-  ingredients.push({id:ingredients.length+1,name,pack:document.getElementById('ni-pack').value||'—',
+  const newId = Math.max(0, ...ingredients.map(i=>i.id)) + 1; // המרה הקודמת (length+1) התנגשה עם ids קיימים כי יש פערים במספור
+  ingredients.push({id:newId,name,pack:document.getElementById('ni-pack').value||'—',
     qty:document.getElementById('ni-qty').value!==''?parseFloat(document.getElementById('ni-qty').value):null,
     min:document.getElementById('ni-min').value!==''?parseFloat(document.getElementById('ni-min').value):null,
-    supplier:document.getElementById('ni-sup').value});
+    supplier:document.getElementById('ni-sup').value,
+    custom:true}); // מסמן שזה פריט שנוסף ע"י המשתמש ולא קיים בקוד הבסיסי — כדי שישרוד רענון/סנכרון
   closeModal();renderIngredients();
+  saveToStorage();
+  syncToSupabase();
 }
 function openModalEl(){document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
@@ -3843,6 +3866,7 @@ async function syncToSupabase() {
   const data = {
     codeVersion: CODE_VERSION,
     ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt})),
+    customIngredients: ingredients.filter(i=>i.custom),
     finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
     nutritionData,
     orders,
@@ -3899,6 +3923,12 @@ async function loadFromSupabase() {
     });
   }
 
+  // חומרי גלם מותאמים-אישית (לא קיימים בקוד הבסיסי) — צריך ליצור מחדש, לא רק לעדכן
+  if(data.customIngredients) {
+    data.customIngredients.forEach(saved => {
+      if(!ingredients.some(i=>i.id===saved.id)) ingredients.push({...saved});
+    });
+  }
   if(data.ingredients) {
     data.ingredients.forEach(saved => {
       const ing = ingredients.find(i=>i.id===saved.id);
@@ -3994,6 +4024,7 @@ function saveToStorage() {
     const data = {
       codeVersion: CODE_VERSION,
       ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt})),
+      customIngredients: ingredients.filter(i=>i.custom),
       finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
       dispatches: dispatches.map(d=>({id:d.id,branch:d.branch,status:d.status,order:d.order})),
       productionLog,
@@ -4030,6 +4061,12 @@ function loadFromStorage() {
       return;
     }
 
+    // חומרי גלם מותאמים-אישית (לא קיימים בקוד הבסיסי) — צריך ליצור מחדש, לא רק לעדכן
+    if(data.customIngredients) {
+      data.customIngredients.forEach(saved => {
+        if(!ingredients.some(i=>i.id===saved.id)) ingredients.push({...saved});
+      });
+    }
     if(data.ingredients) {
       data.ingredients.forEach(saved => {
         const ing = ingredients.find(i=>i.id===saved.id);
