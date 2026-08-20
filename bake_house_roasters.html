@@ -239,6 +239,26 @@ tr:hover td{background:#FDF8F3;}
 .filter-pill{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:'Heebo',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;}
 .search-box{padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-family:'Heebo',sans-serif;font-size:13px;color:var(--brown);min-width:180px;transition:border-color .2s;}
 .search-box:focus{outline:none;border-color:var(--gold);}
+#gsearch-wrap{position:relative;flex:1;max-width:380px;margin:0 16px;}
+#gsearch-input{width:100%;padding:8px 36px 8px 14px;border-radius:20px;border:1.5px solid var(--border);background:#FAF5EE;font-family:'Heebo',sans-serif;font-size:13px;color:var(--brown);transition:border-color .2s,background .2s;box-sizing:border-box;}
+#gsearch-input:focus{outline:none;border-color:var(--gold);background:#fff;}
+#gsearch-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted);pointer-events:none;}
+#gsearch-clear{position:absolute;left:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;display:none;padding:2px 4px;}
+#gsearch-results{position:absolute;top:calc(100% + 6px);right:0;left:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.15);max-height:420px;overflow-y:auto;display:none;z-index:300;}
+#gsearch-results.open{display:block;}
+.gs-group-label{padding:8px 14px 4px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.gs-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid #F5F0EA;}
+.gs-item:last-child{border-bottom:none;}
+.gs-item:hover,.gs-item.gs-active{background:#FAF5EE;}
+.gs-item-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.gs-item-name{flex:1;font-size:13px;font-weight:600;color:var(--brown);}
+.gs-item-name mark{background:rgba(212,160,23,.35);color:inherit;border-radius:3px;padding:0 1px;}
+.gs-item-sub{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap;}
+.gs-empty{padding:24px 14px;text-align:center;color:var(--muted);font-size:13px;}
+@media(max-width:900px){
+  .topbar{flex-wrap:wrap;height:auto;padding:10px 16px;gap:8px;}
+  #gsearch-wrap{order:3;max-width:none;width:100%;margin:0;}
+}
 .filter-pill:hover{border-color:var(--brown-mid);color:var(--brown);}
 .filter-pill.active{background:var(--brown);color:#fff;border-color:var(--brown);}
 .filter-pill.active.fp-כהן{background:#5D4037;border-color:#5D4037;}
@@ -322,6 +342,14 @@ tr:hover td{background:#FDF8F3;}
       <span></span><span></span><span></span>
     </button>
     <div class="page-title" id="page-title">לוח בקרה</div>
+  </div>
+  <div id="gsearch-wrap">
+    <span id="gsearch-icon">🔍</span>
+    <input type="text" id="gsearch-input" placeholder="חיפוש בכל המערכת... (חומרי גלם, מוצרים, מתכונים, ספקים)"
+      oninput="globalSearchInput(this.value)" onfocus="globalSearchInput(this.value)"
+      onkeydown="globalSearchKey(event)" autocomplete="off">
+    <button id="gsearch-clear" onclick="globalSearchClear()">✕</button>
+    <div id="gsearch-results"></div>
   </div>
   <div class="topbar-actions" id="topbar-actions">
     <span id="save-indicator" style="font-size:11px;color:var(--muted);transition:color .3s"></span>
@@ -4266,6 +4294,135 @@ function checkLowStockOnLoad() {
         style="background:none;border:none;color:inherit;font-size:20px;cursor:pointer;opacity:.7;flex-shrink:0">✕</button>
     </div>`;
 }
+
+// ===================== GLOBAL SEARCH =====================
+let gsCurrentResults = [];
+let gsActiveIndex = -1;
+
+function getGlobalSearchIndex() {
+  const items = [];
+  ingredients.forEach(i => items.push({
+    cat:'חומרי גלם', icon:'🌾', name:i.name,
+    sub: i.qty!==null ? `${i.qty} ${i.pack||''}`.trim() : 'לא הוזן',
+    go: () => { nav('ingredients', document.querySelector(`[onclick*="nav('ingredients'"]`)); openIngPanel(i.id); }
+  }));
+  finishedGoods.forEach(p => items.push({
+    cat:'מוצרים סופיים', icon:'📦', name:p.name,
+    sub: p.weight ? `${p.weight} גרם` : '',
+    go: () => {
+      nav('finished', document.querySelector(`[onclick*="nav('finished'"]`));
+      const inp = document.getElementById('fg-search');
+      if(inp) { inp.value = p.name; setFgSearch(p.name); }
+    }
+  }));
+  recipes.forEach(r => items.push({
+    cat:'מתכונים', icon:'📋', name:r.name,
+    sub: r.portions ? `${r.portions} ${r.portionLabel||'יח׳'}` : '',
+    go: () => { nav('recipes', document.querySelector(`[onclick*="nav('recipes'"]`)); openRecipePanel(r.id); }
+  }));
+  suppliers.forEach(s => items.push({
+    cat:'ספקים', icon:'🚛', name:s.name,
+    sub: s.type || '',
+    go: () => { nav('suppliers', document.querySelector(`[onclick*="nav('suppliers'"]`)); }
+  }));
+  return items;
+}
+
+function gsHighlight(text, q) {
+  const idx = text.indexOf(q);
+  if(idx === -1) return text;
+  return text.slice(0,idx) + '<mark>' + text.slice(idx,idx+q.length) + '</mark>' + text.slice(idx+q.length);
+}
+
+function globalSearchInput(val) {
+  const q = val.trim();
+  const clearBtn = document.getElementById('gsearch-clear');
+  const box = document.getElementById('gsearch-results');
+  if(clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+  gsActiveIndex = -1;
+  if(!q) { box.classList.remove('open'); box.innerHTML=''; gsCurrentResults=[]; return; }
+
+  const matched = getGlobalSearchIndex().filter(it => it.name.includes(q));
+  matched.sort((a,b) => {
+    const aStart = a.name.startsWith(q) ? 0 : 1;
+    const bStart = b.name.startsWith(q) ? 0 : 1;
+    if(aStart !== bStart) return aStart - bStart;
+    return a.name.localeCompare(b.name,'he');
+  });
+
+  const catOrder = ['חומרי גלם','מוצרים סופיים','מתכונים','ספקים'];
+  const grouped = {};
+  matched.forEach(it => { (grouped[it.cat] = grouped[it.cat]||[]).push(it); });
+
+  gsCurrentResults = [];
+  let html = '';
+  catOrder.forEach(cat => {
+    const list = (grouped[cat]||[]).slice(0,5);
+    if(!list.length) return;
+    html += `<div class="gs-group-label">${cat}</div>`;
+    list.forEach(it => {
+      const myIdx = gsCurrentResults.length;
+      gsCurrentResults.push(it);
+      html += `<div class="gs-item" data-idx="${myIdx}" onclick="gsSelect(${myIdx})">
+        <span class="gs-item-icon">${it.icon}</span>
+        <span class="gs-item-name">${gsHighlight(it.name, q)}</span>
+        ${it.sub ? `<span class="gs-item-sub">${it.sub}</span>` : ''}
+      </div>`;
+    });
+  });
+
+  box.innerHTML = matched.length ? html : `<div class="gs-empty">אין תוצאות ל"${q}"</div>`;
+  box.classList.add('open');
+}
+
+function gsSelect(idx) {
+  const it = gsCurrentResults[idx];
+  if(!it) return;
+  it.go();
+  globalSearchClear();
+}
+
+function globalSearchClear() {
+  const inp = document.getElementById('gsearch-input');
+  if(inp) inp.value = '';
+  const clearBtn = document.getElementById('gsearch-clear');
+  if(clearBtn) clearBtn.style.display = 'none';
+  const box = document.getElementById('gsearch-results');
+  if(box) { box.classList.remove('open'); box.innerHTML = ''; }
+  gsCurrentResults = [];
+  gsActiveIndex = -1;
+}
+
+function gsUpdateActive() {
+  document.querySelectorAll('.gs-item').forEach(el=>el.classList.remove('gs-active'));
+  const el = document.querySelector(`.gs-item[data-idx="${gsActiveIndex}"]`);
+  if(el) { el.classList.add('gs-active'); el.scrollIntoView({block:'nearest'}); }
+}
+
+function globalSearchKey(e) {
+  if(e.key === 'Escape') { globalSearchClear(); e.target.blur(); return; }
+  if(!gsCurrentResults.length) return;
+  if(e.key === 'ArrowDown') {
+    e.preventDefault();
+    gsActiveIndex = Math.min(gsCurrentResults.length-1, gsActiveIndex+1);
+    gsUpdateActive();
+  } else if(e.key === 'ArrowUp') {
+    e.preventDefault();
+    gsActiveIndex = Math.max(0, gsActiveIndex-1);
+    gsUpdateActive();
+  } else if(e.key === 'Enter') {
+    e.preventDefault();
+    gsSelect(gsActiveIndex >= 0 ? gsActiveIndex : 0);
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('gsearch-wrap');
+  if(wrap && !wrap.contains(e.target)) {
+    const box = document.getElementById('gsearch-results');
+    if(box) box.classList.remove('open');
+  }
+});
 
 // ===================== INIT =====================
 (async () => {
