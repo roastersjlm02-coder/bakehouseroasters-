@@ -1002,6 +1002,13 @@ const dispatches = [
   {id:4,branch:'modiin',status:'dispatched',order:[{product:'עוגיות שוקוצ׳יפס 92g',box:'4L',ordered:3,supplied:3,checked:true}]},
 ];
 let recycledRecipes = []; // סל מחזור למתכונים שנמחקו
+let deletedRecipeIds = []; // מזהים שנמחקו לצמיתות — נשארים כאן גם אחרי ריקון הסל, כדי שהמתכון לא יחזור מהקוד הבסיסי
+// המשתנים הבאים היו בשימוש ב-syncToSupabase / loadFromSupabase בלי הצהרה בכלל —
+// כל קריאה ל-syncToSupabase הייתה נכשלת מיד (ReferenceError) וכל הסנכרון לענן לא עבד בשקט.
+let orders = [];
+let weeklyPlan = [];
+let weeklyHistory = [];
+let ingHistory = {};
 const recipes = [
   {id:1, name:'עוגיות שוקוצ׳יפס (60 גרם)', cost:2.9, price:12, portions:45, dairy:true, containsGluten:true, nuts:[], fgId:1,
    ings:[
@@ -2064,6 +2071,7 @@ async function confirmDeleteRecipe(id) {
     const recipe = recipes.splice(idx, 1)[0];
     recipe.deletedAt = new Date().toLocaleString('he-IL');
     recycledRecipes.unshift(recipe);
+    if(!deletedRecipeIds.includes(id)) deletedRecipeIds.push(id);
   }
   closeModal();
   closeRecipePanel();
@@ -2106,6 +2114,7 @@ async function restoreRecipe(id) {
   delete recipe.deletedAt;
   recipes.push(recipe);
   recipes.sort((a,b)=>a.id-b.id);
+  deletedRecipeIds = deletedRecipeIds.filter(x=>x!==id);
   recycleOpen = true;
   renderRecipes();
   saveToStorage();
@@ -3806,6 +3815,7 @@ async function syncToSupabase() {
     weeklyHistory,
     ingHistory,
     recycledRecipes,
+    deletedRecipeIds,
     recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
       id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
       portionWeight:r.portionWeight, portionLabel:r.portionLabel,
@@ -3827,14 +3837,13 @@ async function loadFromSupabase() {
   if(data.weeklyPlan) weeklyPlan = data.weeklyPlan;
   if(data.weeklyHistory) weeklyHistory = data.weeklyHistory;
   if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
-  if(data.recycledRecipes) {
-    recycledRecipes = data.recycledRecipes;
-    // הסר מתכונים שבסל מחזור מהרשימה הראשית
-    recycledRecipes.forEach(r => {
-      const idx = recipes.findIndex(x=>x.id===r.id);
-      if(idx > -1) recipes.splice(idx, 1);
-    });
-  }
+  if(data.recycledRecipes) recycledRecipes = data.recycledRecipes;
+  if(data.deletedRecipeIds) deletedRecipeIds = data.deletedRecipeIds;
+  // הסר לצמיתות כל מתכון שב-deletedRecipeIds — כולל כאלה שכבר רוקנו מהסל (הרשימה הזו לא מתרוקנת לעולם)
+  deletedRecipeIds.forEach(id => {
+    const idx = recipes.findIndex(x=>x.id===id);
+    if(idx > -1) recipes.splice(idx, 1);
+  });
 
   if(data.recipes) {
     data.recipes.forEach(saved => {
@@ -3958,6 +3967,7 @@ function saveToStorage() {
       allergenData: allergenData.map(a=>({id:a.id,batch:a.batch,batchDate:a.batchDate,changed:a.changed,allergens:a.allergens,prev:a.prev})),
       allergenHistory,
       recycledRecipes,
+      deletedRecipeIds,
       recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
         id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
         portionWeight:r.portionWeight, portionLabel:r.portionLabel,
@@ -4058,13 +4068,12 @@ function loadFromStorage() {
       });
     }
     if(data.allergenHistory) allergenHistory.unshift(...data.allergenHistory);
-    if(data.recycledRecipes) {
-      recycledRecipes = data.recycledRecipes;
-      recycledRecipes.forEach(r => {
-        const idx = recipes.findIndex(x=>x.id===r.id);
-        if(idx > -1) recipes.splice(idx, 1);
-      });
-    }
+    if(data.recycledRecipes) recycledRecipes = data.recycledRecipes;
+    if(data.deletedRecipeIds) deletedRecipeIds = data.deletedRecipeIds;
+    deletedRecipeIds.forEach(id => {
+      const idx = recipes.findIndex(x=>x.id===id);
+      if(idx > -1) recipes.splice(idx, 1);
+    });
 
     const savedAt = data.savedAt ? new Date(data.savedAt).toLocaleString('he-IL') : '—';
     const indicator = document.getElementById('save-indicator');
@@ -4081,6 +4090,7 @@ function loadFromStorage() {
           const r = recipes.splice(idx, 1)[0];
           r.deletedAt = r.deletedAt || 'מחיקה ישנה';
           if(!recycledRecipes.some(x=>x.id===r.id)) recycledRecipes.unshift(r);
+          if(!deletedRecipeIds.includes(id)) deletedRecipeIds.push(id);
         }
       });
       localStorage.removeItem('bhr-deleted-recipes');
