@@ -265,6 +265,17 @@ tr:hover td{background:#FDF8F3;}
 .iv-missing-row:last-child{border-bottom:none;}
 .iv-activity-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
 .iv-activity-row:last-child{border-bottom:none;}
+.weekly-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;}
+.week-day-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;min-height:220px;}
+.week-day-head{padding:10px 12px;background:#FAF5EE;border-bottom:1px solid var(--border);font-weight:700;font-size:13px;text-align:center;}
+.week-day-head.today{background:var(--brown);color:#fff;}
+.week-day-body{padding:8px;flex:1;display:flex;flex-direction:column;gap:6px;}
+.week-item{background:#FAF5EE;border-radius:8px;padding:6px 8px;font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:4px;}
+.week-item.done{opacity:.5;text-decoration:line-through;}
+.week-day-add{border:1.5px dashed var(--border);border-radius:8px;background:none;color:var(--muted);font-size:12px;padding:6px;cursor:pointer;margin-top:auto;}
+@media(max-width:900px){
+  .weekly-grid{grid-template-columns:1fr;}
+}
 .filter-pill:hover{border-color:var(--brown-mid);color:var(--brown);}
 .filter-pill.active{background:var(--brown);color:#fff;border-color:var(--brown);}
 .filter-pill.active.fp-כהן{background:#5D4037;border-color:#5D4037;}
@@ -324,6 +335,7 @@ tr:hover td{background:#FDF8F3;}
     <div class="nav-item" onclick="nav('finished',this)"><span class="icon">📦</span> מוצרים סופיים</div>
     <div class="nav-item" onclick="nav('suppliers',this)"><span class="icon">🚛</span> ספקים</div>
     <div class="nav-section">סניפים</div>
+    <div class="nav-item" onclick="nav('orders',this)"><span class="icon">🛒</span> הזמנות סניפים</div>
     <div class="nav-item" onclick="nav('dispatch',this)"><span class="icon">🚚</span> משלוחים</div>
     <div class="nav-section">בטיחות</div>
     <div class="nav-item" onclick="nav('allergens',this)"><span class="icon">⚠️</span> אלרגנים</div>
@@ -331,6 +343,7 @@ tr:hover td{background:#FDF8F3;}
     <div class="nav-item" onclick="nav('nutrition',this)"><span class="icon">🥗</span> ערכים תזונתיים</div>
     <div class="nav-section">ייצור</div>
     <div class="nav-item" onclick="nav('production',this)"><span class="icon">🍪</span> דיווח ייצור</div>
+    <div class="nav-item" onclick="nav('weekly',this)"><span class="icon">🗓️</span> תכנון שבועי</div>
     <div class="nav-item" onclick="nav('recipes',this)"><span class="icon">📋</span> מתכונים</div>
     <div class="nav-section">ניהול</div>
     <div class="nav-item" onclick="nav('recycle',this)"><span class="icon">🗑</span> סל מחזור <span id="nav-recycle-badge" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;margin-right:auto">0</span></div>
@@ -547,6 +560,22 @@ tr:hover td{background:#FDF8F3;}
   <div class="supplier-grid" id="supplier-grid"></div>
 </div>
 
+<!-- ===== ORDERS (branch intake) ===== -->
+<div class="page" id="page-orders">
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat s-orange"><div class="stat-label">ממתינות</div><div class="stat-value" style="color:var(--orange)" id="ord-pending">0</div><div class="stat-sub">הזמנות</div></div>
+    <div class="stat s-green"><div class="stat-label">אושרו</div><div class="stat-value green" id="ord-approved">0</div><div class="stat-sub">מוכנות למשלוח</div></div>
+    <div class="stat s-blue"><div class="stat-label">סה"כ יחידות</div><div class="stat-value" style="color:var(--blue)" id="ord-units">0</div><div class="stat-sub">בכל ההזמנות הפתוחות</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">הזמנות סניפים</div>
+      <button class="btn btn-primary" onclick="openNewOrderModal()">+ הזמנה חדשה</button>
+    </div>
+    <div id="orders-list"></div>
+  </div>
+</div>
+
 <!-- ===== DISPATCH ===== -->
 <div class="page" id="page-dispatch">
   <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
@@ -671,6 +700,15 @@ tr:hover td{background:#FDF8F3;}
       <tbody id="prod-log-table"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">אין עדיין דיווחי ייצור</td></tr></tbody>
     </table>
   </div>
+</div>
+
+<!-- ===== WEEKLY PLANNING ===== -->
+<div class="page" id="page-weekly">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:13px;color:var(--muted)">תכנון אפייה לשבוע — מה לאפות ומתי</div>
+    <button class="btn btn-secondary" onclick="clearWeekDone()">נקה ✓ שהושלמו</button>
+  </div>
+  <div id="weekly-grid" class="weekly-grid"></div>
 </div>
 
 <!-- ===== NUTRITION ===== -->
@@ -3241,6 +3279,163 @@ function toggleCheck(did,oi){const d=dispatches.find(x=>x.id===did);d.order[oi].
 function setSupplied(did,oi,val){const d=dispatches.find(x=>x.id===did);d.order[oi].supplied=Math.max(0,Math.min(d.order[oi].ordered,parseInt(val)||0));renderDispatch();}
 function markOut(id){dispatches.find(x=>x.id===id).status='dispatched';renderDispatch();}
 
+// ===================== ORDERS (הזמנות סניפים) =====================
+function renderOrders() {
+  const pending = orders.filter(o=>o.status==='pending');
+  const approved = orders.filter(o=>o.status==='approved');
+  const totalUnits = orders.filter(o=>o.status!=='fulfilled').reduce((s,o)=>s+(o.qty||0),0);
+  const pendEl=document.getElementById('ord-pending'), apprEl=document.getElementById('ord-approved'), unitsEl=document.getElementById('ord-units');
+  if(pendEl) pendEl.textContent = pending.length;
+  if(apprEl) apprEl.textContent = approved.length;
+  if(unitsEl) unitsEl.textContent = totalUnits;
+
+  const list = document.getElementById('orders-list');
+  if(!list) return;
+  const open = orders.filter(o=>o.status!=='fulfilled');
+  if(!open.length) { list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">אין הזמנות פתוחות</div>'; return; }
+
+  const byBranch = {};
+  open.forEach(o => { (byBranch[o.branch] = byBranch[o.branch]||[]).push(o); });
+
+  list.innerHTML = BRANCHES.filter(b=>byBranch[b.id]).map(b => {
+    const rows = byBranch[b.id].map(o => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-weight:700;font-size:13px">${o.product}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${o.qty} יח׳${o.neededBy?` · דרוש עד ${o.neededBy.split('-').reverse().join('/')}`:''}${o.note?` · ${o.note}`:''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="badge ${o.status==='pending'?'medium':'ok'}">${o.status==='pending'?'⏳ ממתין':'✅ אושר'}</span>
+          ${o.status==='pending'?`<button class="act-btn" onclick="approveOrder(${o.id})">אשר</button>`:`<button class="act-btn" onclick="fulfillOrder(${o.id})">✓ סופק</button>`}
+          <button class="act-btn danger" onclick="deleteOrder(${o.id})">🗑</button>
+        </div>
+      </div>`).join('');
+    return `<div style="border-bottom:2px solid var(--border)">
+      <div style="padding:10px 20px;background:#FAF5EE;font-weight:700;font-size:13px;color:${b.color}">${b.name}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function openNewOrderModal() {
+  const products = [...finishedGoods.map(p=>p.name)];
+  document.getElementById('modal-body').innerHTML = `
+    <h3>הזמנה חדשה</h3>
+    <div class="form-group"><label>סניף</label>
+      <select id="no-branch">${BRANCHES.map(b=>`<option value="${b.id}">${b.name}</option>`).join('')}</select>
+    </div>
+    <div class="form-group"><label>מוצר</label>
+      <select id="no-product">${products.map(p=>`<option>${p}</option>`).join('')}</select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>כמות</label><input type="number" id="no-qty" min="1" value="1"></div>
+      <div class="form-group"><label>דרוש עד (אופציונלי)</label><input type="date" id="no-date"></div>
+    </div>
+    <div class="form-group"><label>הערה (אופציונלי)</label><input type="text" id="no-note" placeholder="לדוגמה: לאירוע מיוחד"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
+      <button class="btn btn-primary" onclick="saveNewOrder()">הוסף הזמנה</button>
+    </div>`;
+  openModalEl();
+}
+
+async function saveNewOrder() {
+  const branch = document.getElementById('no-branch').value;
+  const product = document.getElementById('no-product').value;
+  const qty = parseInt(document.getElementById('no-qty').value) || 1;
+  const neededBy = document.getElementById('no-date').value || null;
+  const note = document.getElementById('no-note').value.trim() || null;
+  const newId = Math.max(0, ...orders.map(o=>o.id||0)) + 1;
+  orders.push({id:newId, branch, product, qty, neededBy, note, status:'pending', createdAt:new Date().toISOString()});
+  closeModal(); renderOrders();
+  saveToStorage(); await syncToSupabase();
+}
+
+async function approveOrder(id) {
+  const o = orders.find(x=>x.id===id); if(o) o.status='approved';
+  renderOrders(); saveToStorage(); await syncToSupabase();
+}
+async function fulfillOrder(id) {
+  const o = orders.find(x=>x.id===id); if(o) o.status='fulfilled';
+  renderOrders(); saveToStorage(); await syncToSupabase();
+}
+async function deleteOrder(id) {
+  const idx = orders.findIndex(x=>x.id===id);
+  if(idx>-1) orders.splice(idx,1);
+  renderOrders(); saveToStorage(); await syncToSupabase();
+}
+
+// ===================== WEEKLY PLANNING (תכנון שבועי) =====================
+const WEEK_DAYS = [
+  {id:'sun',label:'ראשון'}, {id:'mon',label:'שני'}, {id:'tue',label:'שלישי'},
+  {id:'wed',label:'רביעי'}, {id:'thu',label:'חמישי'}, {id:'fri',label:'שישי'}, {id:'sat',label:'שבת'},
+];
+
+function renderWeeklyPage() {
+  const grid = document.getElementById('weekly-grid');
+  if(!grid) return;
+  const todayIdx = new Date().getDay(); // 0=Sunday
+  grid.innerHTML = WEEK_DAYS.map((d,di) => {
+    const items = weeklyPlan.filter(w=>w.day===d.id);
+    const itemsHtml = items.map(w => `
+      <div class="week-item${w.done?' done':''}">
+        <span onclick="toggleWeekDone(${w.id})" style="cursor:pointer;flex:1">${w.done?'✓ ':''}${w.recipeName} ${w.qty?`× ${w.qty}`:''}</span>
+        <button onclick="deleteWeekItem(${w.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 2px">✕</button>
+      </div>`).join('');
+    return `<div class="week-day-card">
+      <div class="week-day-head${di===todayIdx?' today':''}">${d.label}</div>
+      <div class="week-day-body">
+        ${itemsHtml || '<div style="text-align:center;color:var(--muted);font-size:11px;padding:10px 0">אין תכנון</div>'}
+        <button class="week-day-add" onclick="openWeekAddModal('${d.id}')">+ הוסף</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openWeekAddModal(dayId) {
+  const dayLabel = WEEK_DAYS.find(d=>d.id===dayId)?.label || dayId;
+  document.getElementById('modal-body').innerHTML = `
+    <h3>הוספה ל${dayLabel}</h3>
+    <div class="form-group"><label>מתכון</label>
+      <select id="wk-recipe">${recipes.map(r=>`<option value="${r.id}">${r.name}</option>`).join('')}</select>
+    </div>
+    <div class="form-group"><label>כמות נגלות (אופציונלי)</label><input type="number" id="wk-qty" min="1" placeholder="לדוגמה: 2"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">ביטול</button>
+      <button class="btn btn-primary" onclick="saveWeekItem('${dayId}')">הוסף</button>
+    </div>`;
+  openModalEl();
+}
+
+async function saveWeekItem(dayId) {
+  const recipeId = parseInt(document.getElementById('wk-recipe').value);
+  const recipe = recipes.find(r=>r.id===recipeId);
+  if(!recipe) return;
+  const qty = document.getElementById('wk-qty').value ? parseInt(document.getElementById('wk-qty').value) : null;
+  const newId = Math.max(0, ...weeklyPlan.map(w=>w.id||0)) + 1;
+  weeklyPlan.push({id:newId, day:dayId, recipeId, recipeName:recipe.name, qty, done:false});
+  closeModal(); renderWeeklyPage();
+  saveToStorage(); await syncToSupabase();
+}
+
+async function toggleWeekDone(id) {
+  const w = weeklyPlan.find(x=>x.id===id);
+  if(w) w.done = !w.done;
+  renderWeeklyPage(); saveToStorage(); await syncToSupabase();
+}
+
+async function deleteWeekItem(id) {
+  const idx = weeklyPlan.findIndex(x=>x.id===id);
+  if(idx>-1) weeklyPlan.splice(idx,1);
+  renderWeeklyPage(); saveToStorage(); await syncToSupabase();
+}
+
+async function clearWeekDone() {
+  weeklyHistory.push(...weeklyPlan.filter(w=>w.done));
+  weeklyPlan = weeklyPlan.filter(w=>!w.done);
+  renderWeeklyPage(); saveToStorage(); await syncToSupabase();
+}
+
 // ===================== ALLERGENS =====================
 function renderAllergens() {
   document.getElementById('allergen-grid').innerHTML = allergenData.map(a=>{
@@ -4193,6 +4388,9 @@ function saveToStorage() {
       recycledRecipes,
       deletedRecipeIds,
       ingHistory,
+      orders,
+      weeklyPlan,
+      weeklyHistory,
       recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
         id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
         portionWeight:r.portionWeight, portionLabel:r.portionLabel,
@@ -4301,6 +4499,9 @@ function loadFromStorage() {
     }
     if(data.allergenHistory) allergenHistory.unshift(...data.allergenHistory);
     if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
+    if(data.orders) orders = data.orders;
+    if(data.weeklyPlan) weeklyPlan = data.weeklyPlan;
+    if(data.weeklyHistory) weeklyHistory = data.weeklyHistory;
     if(data.recycledRecipes) recycledRecipes = data.recycledRecipes;
     if(data.deletedRecipeIds) deletedRecipeIds = data.deletedRecipeIds;
     deletedRecipeIds.forEach(id => {
