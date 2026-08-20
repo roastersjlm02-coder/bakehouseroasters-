@@ -303,6 +303,8 @@ tr:hover td{background:#FDF8F3;}
     <div class="nav-section">ייצור</div>
     <div class="nav-item" onclick="nav('production',this)"><span class="icon">🍪</span> דיווח ייצור</div>
     <div class="nav-item" onclick="nav('recipes',this)"><span class="icon">📋</span> מתכונים</div>
+    <div class="nav-section">ניהול</div>
+    <div class="nav-item" onclick="nav('recycle',this)"><span class="icon">🗑</span> סל מחזור <span id="nav-recycle-badge" style="display:none;background:var(--red);color:#fff;border-radius:20px;padding:1px 8px;font-size:11px;font-weight:700;margin-right:auto">0</span></div>
   </nav>
   <div class="sidebar-footer">
     <div class="sync-status"><div class="sync-dot"></div> מוכן לחיבור Sheets</div>
@@ -756,13 +758,19 @@ tr:hover td{background:#FDF8F3;}
   </div>
 
   <div class="card" id="recipe-list"></div>
+</div>
 
-  <div class="card" id="recycle-card" style="margin-top:16px;display:none">
-    <div class="card-header" style="cursor:pointer" onclick="toggleRecycleBin()">
-      <div class="card-title">🗑 סל מחזור <span id="recycle-count" style="background:var(--border);color:var(--brown-mid);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700;margin-right:6px">0</span></div>
-      <button class="btn btn-secondary" onclick="event.stopPropagation();purgeAllRecipes()">רוקן סל</button>
+<div class="page" id="page-recycle">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="font-size:13px;color:var(--muted)">כל מה שנמחק מהמערכת מרוכז כאן — אפשר לשחזר או למחוק לצמיתות</div>
+    <button class="btn btn-secondary" onclick="purgeAllRecipes()">רוקן הכל</button>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📋 מתכונים <span id="recycle-count" style="background:var(--border);color:var(--brown-mid);border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700;margin-right:6px">0</span></div>
     </div>
-    <div id="recycle-list" style="display:none"></div>
+    <div id="recycle-list"></div>
   </div>
 </div>
 
@@ -1651,7 +1659,7 @@ function nav(page, el) {
   document.getElementById('sidebar-overlay').classList.remove('open');
   const btn = document.getElementById('hamburger-btn');
   if(btn){const s=btn.querySelectorAll('span');s[0].style.cssText='';s[1].style.cssText='';s[2].style.cssText='';}
-  const titles = {dashboard:'לוח בקרה',ingredients:'חומרי גלם',finished:'מוצרים סופיים',suppliers:'ספקים',dispatch:'משלוחים לסניפים',allergens:'אלרגנים',labels:'תוויות והדפסה',recipes:'מתכונים ועלויות',production:'דיווח ייצור',nutrition:'ערכים תזונתיים',orders:'הזמנות סניפים',weekly:'תכנון שבועי'};
+  const titles = {dashboard:'לוח בקרה',ingredients:'חומרי גלם',finished:'מוצרים סופיים',suppliers:'ספקים',dispatch:'משלוחים לסניפים',allergens:'אלרגנים',labels:'תוויות והדפסה',recipes:'מתכונים ועלויות',production:'דיווח ייצור',nutrition:'ערכים תזונתיים',orders:'הזמנות סניפים',weekly:'תכנון שבועי',recycle:'סל מחזור'};
   document.getElementById('page-title').textContent = titles[page]||page;
   if(page==='dashboard') { renderDashboard(); checkLowStockOnLoad(); }
   if(page==='ingredients') renderIngredients();
@@ -1663,6 +1671,7 @@ function nav(page, el) {
   if(page==='nutrition') initNutrition();
   if(page==='production') initProduction();
   if(page==='recipes') renderRecipes();
+  if(page==='recycle') renderRecycleBin();
   if(page==='orders') renderOrders();
   if(page==='weekly') renderWeeklyPage();
 }
@@ -2006,6 +2015,8 @@ function uploadIngImg(id) {
           return;
         }
         renderIngredients();
+        const panel = document.getElementById('ing-panel');
+        if(panel && panel.style.display==='block') openIngPanel(id);
       };
       img.src = ev.target.result;
     };
@@ -2017,6 +2028,8 @@ function uploadIngImg(id) {
 function removeIngImg(id) {
   localStorage.removeItem('ing-img-'+id);
   renderIngredients();
+  const panel = document.getElementById('ing-panel');
+  if(panel && panel.style.display==='block') openIngPanel(id);
 }
 
 function editIng(id) {
@@ -2097,22 +2110,21 @@ async function confirmDeleteRecipe(id) {
 }
 
 // ===== סל מחזור =====
-let recycleOpen = false;
-
-function toggleRecycleBin() {
-  recycleOpen = !recycleOpen;
-  document.getElementById('recycle-list').style.display = recycleOpen ? 'block' : 'none';
+function updateRecycleBadge() {
+  const badge = document.getElementById('nav-recycle-badge');
+  if(!badge) return;
+  const n = recycledRecipes.length;
+  badge.textContent = n;
+  badge.style.display = n ? 'inline-block' : 'none';
 }
 
 function renderRecycleBin() {
-  const card = document.getElementById('recycle-card');
-  if(!card) return;
+  updateRecycleBadge();
   const list = document.getElementById('recycle-list');
   const count = document.getElementById('recycle-count');
-  if(!recycledRecipes.length) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
+  if(!list || !count) return;
   count.textContent = recycledRecipes.length;
-  list.innerHTML = recycledRecipes.map(r => `
+  list.innerHTML = recycledRecipes.length ? recycledRecipes.map(r => `
     <div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border)">
       <div style="flex:1;opacity:.7">
         <div style="font-weight:700;font-size:14px;text-decoration:line-through">${r.name}</div>
@@ -2120,7 +2132,7 @@ function renderRecycleBin() {
       </div>
       <button class="act-btn" onclick="restoreRecipe(${r.id})" title="שחזר">↩ שחזר</button>
       <button class="act-btn danger" onclick="purgeRecipe(${r.id})" title="מחק לצמיתות">🗑 לצמיתות</button>
-    </div>`).join('');
+    </div>`).join('') : '<div style="text-align:center;padding:40px;color:var(--muted)">הסל ריק</div>';
 }
 
 async function restoreRecipe(id) {
@@ -2131,7 +2143,6 @@ async function restoreRecipe(id) {
   recipes.push(recipe);
   recipes.sort((a,b)=>a.id-b.id);
   deletedRecipeIds = deletedRecipeIds.filter(x=>x!==id);
-  recycleOpen = true;
   renderRecipes();
   saveToStorage();
   await syncToSupabase();
@@ -2158,8 +2169,7 @@ async function confirmPurgeRecipe(id) {
   const idx = recycledRecipes.findIndex(x=>x.id===id);
   if(idx > -1) recycledRecipes.splice(idx, 1);
   closeModal();
-  recycleOpen = true;
-  renderRecipes();
+  renderRecycleBin();
   saveToStorage();
   await syncToSupabase();
 }
@@ -2267,7 +2277,16 @@ function openIngPanel(id) {
     </div>`;
   }).join('') : '<div style="color:var(--muted);font-size:12px;text-align:center;padding:8px">אין תאריכי תפוגה</div>';
 
+  const imgSrc = localStorage.getItem('ing-img-'+id);
+  const imgHtml = imgSrc
+    ? `<div style="text-align:center;margin-bottom:12px">
+         <img src="${imgSrc}" style="width:100%;max-height:180px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer" onclick="uploadIngImg(${id})" title="לחץ להחלפה">
+         <button class="act-btn danger" style="margin-top:6px" onclick="removeIngImg(${id})">🗑 הסר תמונה</button>
+       </div>`
+    : `<button class="btn btn-secondary" style="width:100%;margin-bottom:12px" onclick="uploadIngImg(${id})">📷 הוסף תמונה</button>`;
+
   document.getElementById('ing-panel-body').innerHTML = `
+    ${imgHtml}
     <div style="text-align:center;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px">
       <div style="font-size:40px;font-weight:900;color:${statusColor}">${i.qty!==null?i.qty:'—'}</div>
       <div style="font-size:13px;color:var(--muted)">${i.pack||''}</div>
@@ -4221,13 +4240,14 @@ function checkLowStockOnLoad() {
   updateApiKeyBtn();
   // שחזר דף מה-URL hash
   const hash = window.location.hash.replace('#','');
-  const validPages = ['dashboard','ingredients','finished','suppliers','dispatch','allergens','labels','recipes','production','nutrition','orders','weekly'];
+  const validPages = ['dashboard','ingredients','finished','suppliers','dispatch','allergens','labels','recipes','production','nutrition','orders','weekly','recycle'];
   if(hash && validPages.includes(hash)) {
     const navEl = document.querySelector(`[onclick*="nav('${hash}'"]`);
     nav(hash, navEl);
   } else {
     renderDashboard();
   }
+  updateRecycleBadge();
   checkLowStockOnLoad();
 })();
 </script>
