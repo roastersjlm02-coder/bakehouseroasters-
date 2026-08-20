@@ -255,6 +255,16 @@ tr:hover td{background:#FDF8F3;}
 .gs-item-name mark{background:rgba(212,160,23,.35);color:inherit;border-radius:3px;padding:0 1px;}
 .gs-item-sub{font-size:11px;color:var(--muted);flex-shrink:0;white-space:nowrap;}
 .gs-empty{padding:24px 14px;text-align:center;color:var(--muted);font-size:13px;}
+.iv-bar-row{margin-bottom:10px;}
+.iv-bar-row .iv-bar-label{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;}
+.iv-bar-row .iv-bar-name{font-weight:600;color:var(--brown);}
+.iv-bar-row .iv-bar-value{color:var(--muted);}
+.iv-bar-track{height:8px;background:#F0E9DF;border-radius:4px;overflow:hidden;}
+.iv-bar-fill{height:100%;background:var(--gold);border-radius:4px;}
+.iv-missing-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.iv-missing-row:last-child{border-bottom:none;}
+.iv-activity-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.iv-activity-row:last-child{border-bottom:none;}
 .filter-pill:hover{border-color:var(--brown-mid);color:var(--brown);}
 .filter-pill.active{background:var(--brown);color:#fff;border-color:var(--brown);}
 .filter-pill.active.fp-כהן{background:#5D4037;border-color:#5D4037;}
@@ -434,9 +444,11 @@ tr:hover td{background:#FDF8F3;}
   </div>
   <div id="ing-panel-overlay" onclick="closeIngPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.2);z-index:199"></div>
   <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-    <div class="stat s-red"><div class="stat-label">ממתין לעדכון</div><div class="stat-value red" id="ing-pending">18</div><div class="stat-sub">כמויות לא הוזנו</div></div>
-    <div class="stat s-green"><div class="stat-label">פריטים</div><div class="stat-value green">24</div><div class="stat-sub">חומרי גלם</div></div>
-    <div class="stat s-gold"><div class="stat-label">ערך מלאי</div><div class="stat-value gold">₪2,840</div><div class="stat-sub">לפי מחיר עלות</div></div>
+    <div class="stat s-red"><div class="stat-label">ממתין לעדכון</div><div class="stat-value red" id="ing-pending">—</div><div class="stat-sub">כמויות לא הוזנו</div></div>
+    <div class="stat s-green"><div class="stat-label">פריטים</div><div class="stat-value green" id="ing-total-count">—</div><div class="stat-sub">חומרי גלם</div></div>
+    <div class="stat s-gold" id="ing-value-card" onclick="openInventoryValueModal()" style="cursor:pointer" title="לחץ לפירוט">
+      <div class="stat-label">ערך מלאי</div><div class="stat-value gold" id="ing-total-value">—</div><div class="stat-sub" id="ing-value-sub">לפי מחיר עלות · לחץ לפירוט</div>
+    </div>
   </div>
   <div class="card">
     <div class="card-header">
@@ -2028,6 +2040,18 @@ function renderIngredients() {
   document.getElementById('ing-pending').textContent = pending;
   const countEl = document.getElementById('ing-filter-count');
   if(countEl) countEl.textContent = ingFilter==='all' ? `${filtered.length} פריטים` : `${filtered.length} מתוך ${ingredients.length}`;
+
+  // ערך מלאי אמיתי — מבוסס על עלות ליחידת בסיס (i.cost), רק לפריטים שיש להם גם כמות וגם עלות
+  const totalCountEl = document.getElementById('ing-total-count');
+  if(totalCountEl) totalCountEl.textContent = ingredients.length;
+  const withCost = ingredients.filter(i=>i.qty!==null && i.cost!==null && i.cost!==undefined);
+  const totalValue = withCost.reduce((sum,i)=>sum+i.qty*i.cost, 0);
+  const valueEl = document.getElementById('ing-total-value');
+  const valueSubEl = document.getElementById('ing-value-sub');
+  if(valueEl) valueEl.textContent = '₪' + Math.round(totalValue).toLocaleString('he-IL');
+  if(valueSubEl) valueSubEl.textContent = withCost.length < ingredients.length
+    ? `${withCost.length} מתוך ${ingredients.length} פריטים · לחץ לפירוט`
+    : 'לפי מחיר עלות · לחץ לפירוט';
 }
 
 function uploadIngImg(id) {
@@ -2364,12 +2388,90 @@ function closeIngPanel() {
   document.getElementById('ing-panel-overlay').style.display = 'none';
 }
 
+function openInventoryValueModal() {
+  const withCost = ingredients.filter(i=>i.qty!==null && i.cost!==null && i.cost!==undefined);
+  const missingCost = ingredients.filter(i=>i.qty!==null && (i.cost===null || i.cost===undefined));
+  const totalValue = withCost.reduce((sum,i)=>sum+i.qty*i.cost, 0);
+
+  // לפי ספק
+  const bySupplier = {};
+  withCost.forEach(i => { bySupplier[i.supplier] = (bySupplier[i.supplier]||0) + i.qty*i.cost; });
+  const supplierRows = Object.entries(bySupplier).sort((a,b)=>b[1]-a[1]);
+  const maxSupplierVal = supplierRows.length ? supplierRows[0][1] : 1;
+
+  // חומרי הגלם היקרים ביותר
+  const topItems = withCost.map(i=>({name:i.name, val:i.qty*i.cost}))
+    .sort((a,b)=>b.val-a.val).slice(0,8);
+  const maxItemVal = topItems.length ? topItems[0].val : 1;
+
+  // פעילות עדכון אחרונה — אמיתית, מצטברת מכאן ואילך
+  const allActivity = [];
+  Object.entries(ingHistory).forEach(([id,entries]) => {
+    const ing = ingredients.find(x=>x.id===+id);
+    if(!ing) return;
+    (entries||[]).forEach(e => allActivity.push({...e, ingName:ing.name}));
+  });
+  allActivity.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const recentActivity = allActivity.slice(0,8);
+
+  const barRow = (name, val, max) => `
+    <div class="iv-bar-row">
+      <div class="iv-bar-label"><span class="iv-bar-name">${name}</span><span class="iv-bar-value">₪${Math.round(val).toLocaleString('he-IL')}</span></div>
+      <div class="iv-bar-track"><div class="iv-bar-fill" style="width:${max>0?Math.max(3,(val/max)*100):0}%"></div></div>
+    </div>`;
+
+  const missingHtml = missingCost.length ? missingCost.slice(0,10).map(i => `
+    <div class="iv-missing-row">
+      <span>${i.name}</span>
+      <button class="act-btn" onclick="closeModal();editIngDetails(${i.id})">＋ הוסף עלות</button>
+    </div>`).join('') + (missingCost.length>10 ? `<div style="text-align:center;font-size:11px;color:var(--muted);padding-top:6px">ועוד ${missingCost.length-10} פריטים</div>` : '')
+    : '<div style="text-align:center;color:var(--green);font-size:13px;padding:8px">לכל הפריטים עם כמות ידועה יש גם עלות מוגדרת ✓</div>';
+
+  const activityHtml = recentActivity.length ? recentActivity.map(e => `
+    <div class="iv-activity-row">
+      <span>${e.ingName} <span style="color:var(--muted)">· ${e.type}</span></span>
+      <span style="display:flex;gap:10px;align-items:center">
+        <span style="font-weight:700;color:${e.change.startsWith('+')?'var(--green)':'var(--red)'}">${e.change}</span>
+        <span style="color:var(--muted)">${e.time}</span>
+      </span>
+    </div>`).join('')
+    : '<div style="text-align:center;color:var(--muted);font-size:12px;padding:10px">עדיין אין נתוני פעילות — מהעדכון הבא כל שינוי כמות יתועד כאן</div>';
+
+  document.getElementById('modal-body').innerHTML = `
+    <h3>📊 ערך מלאי — פירוט</h3>
+    <div style="text-align:center;padding:12px 0 18px;border-bottom:1px solid var(--border);margin-bottom:16px">
+      <div style="font-size:34px;font-weight:900;color:var(--gold)">₪${Math.round(totalValue).toLocaleString('he-IL')}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">מבוסס על ${withCost.length} מתוך ${ingredients.length} פריטים עם עלות מוגדרת</div>
+    </div>
+
+    ${supplierRows.length ? `
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">💰 ערך לפי ספק</div>
+    ${supplierRows.map(([name,val])=>barRow(name,val,maxSupplierVal)).join('')}
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>` : ''}
+
+    ${topItems.length ? `
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">🏆 חומרי הגלם היקרים ביותר במלאי</div>
+    ${topItems.map(t=>barRow(t.name,t.val,maxItemVal)).join('')}
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>` : ''}
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">⚠️ פריטים ללא עלות מוגדרת (${missingCost.length})</div>
+    ${missingHtml}
+    <div style="height:1px;background:var(--border);margin:16px 0"></div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">🕐 פעילות עדכון אחרונה</div>
+    ${activityHtml}
+
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">סגור</button></div>`;
+  openModalEl();
+}
+
 function editIngDetails(id) {
   const i = ingredients.find(x=>x.id===id);
   document.getElementById('modal-body').innerHTML = `
     <h3>עריכת פרטים — ${i.name}</h3>
     <div class="form-group"><label>שם</label><input type="text" id="ei-name" value="${i.name}"></div>
     <div class="form-group"><label>אריזה</label><input type="text" id="ei-pack" value="${i.pack}"></div>
+    <div class="form-group"><label>עלות ליחידת אריזה (₪, אופציונלי)</label><input type="number" id="ei-cost" value="${i.cost??''}" placeholder="לדוגמה: 18.5"></div>
     <div class="form-group"><label>ספק</label>
       <select id="ei-sup">${suppliers.map(s=>`<option${s.name===i.supplier?' selected':''}>${s.name}</option>`).join('')}</select>
     </div>
@@ -2380,14 +2482,19 @@ function editIngDetails(id) {
   openModalEl();
 }
 
-function saveIngDetails(id) {
+async function saveIngDetails(id) {
   const i = ingredients.find(x=>x.id===id);
   const name = document.getElementById('ei-name').value.trim();
   const pack = document.getElementById('ei-pack').value.trim();
-  if(name) i.name = name;
-  if(pack) i.pack = pack;
-  i.supplier = document.getElementById('ei-sup').value;
+  const costVal = document.getElementById('ei-cost').value;
+  const sup = document.getElementById('ei-sup').value;
+  if(name && name!==i.name) { i.name = name; i._userEditedName = true; }
+  if(pack && pack!==i.pack) { i.pack = pack; i._userEditedPack = true; }
+  if(sup!==i.supplier) { i.supplier = sup; i._userEditedSupplier = true; }
+  i.cost = costVal!=='' ? parseFloat(costVal) : null;
   closeModal(); renderIngredients();
+  saveToStorage();
+  await syncToSupabase();
 }
 
 function calcIngTotal(id) {
@@ -2403,14 +2510,32 @@ function calcIngTotal(id) {
   const manualInput = document.getElementById('ei-qty');
   if(manualInput) manualInput.value = total || '';
 }
-function saveIng(id) {
+async function saveIng(id) {
   const i = ingredients.find(x=>x.id===id);
   const qv = document.getElementById('ei-qty')?.value;
   const mv = document.getElementById('ei-min')?.value;
+  const prevQty = i.qty;
   if(qv!=='') i.qty = parseFloat(qv)||0;
   if(mv!=='') i.min = parseFloat(mv)||null;
   i.updatedAt = new Date().toISOString();
+
+  // רישום להיסטוריה — כדי שהכרטסייה תציג נתונים אמיתיים, ולא "אין היסטוריה" לנצח
+  if(qv!=='' && prevQty !== i.qty) {
+    const delta = prevQty===null ? i.qty : +(i.qty - prevQty).toFixed(3);
+    const sign = delta >= 0 ? '+' : '';
+    if(!ingHistory[id]) ingHistory[id] = [];
+    ingHistory[id].unshift({
+      time: new Date().toLocaleString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+      ts: Date.now(),
+      type: prevQty===null ? 'קליטה ראשונית' : 'עדכון ידני',
+      change: `${sign}${delta}`,
+    });
+    ingHistory[id] = ingHistory[id].slice(0,30);
+  }
+
   closeModal(); renderIngredients(); renderDashboard();
+  saveToStorage();
+  await syncToSupabase();
 }
 
 let fgFilterProduct = 'all';
@@ -3712,6 +3837,7 @@ function openModal(type){
       <div class="form-group"><label>כמות</label><input type="number" id="ni-qty" placeholder="כמה שקיות/יח&#x27; יש עכשיו במלאי"></div>
       <div class="form-group"><label>מינימום</label><input type="number" id="ni-min" placeholder="מתחת לכמה שקיות/יח&#x27; להזמין מחדש"></div>
     </div>
+    <div class="form-group"><label>עלות ליחידת אריזה (₪, אופציונלי)</label><input type="number" id="ni-cost" placeholder="לדוגמה: 18.5"></div>
     <div class="form-group"><label>ספק</label><select id="ni-sup">${suppliers.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">ביטול</button><button class="btn btn-primary" onclick="saveNewIng()">הוסף</button></div>`;}
   document.getElementById('modal-body').innerHTML=h;
@@ -3723,6 +3849,7 @@ function saveNewIng(){
   ingredients.push({id:newId,name,pack:document.getElementById('ni-pack').value||'—',
     qty:document.getElementById('ni-qty').value!==''?parseFloat(document.getElementById('ni-qty').value):null,
     min:document.getElementById('ni-min').value!==''?parseFloat(document.getElementById('ni-min').value):null,
+    cost:document.getElementById('ni-cost').value!==''?parseFloat(document.getElementById('ni-cost').value):null,
     supplier:document.getElementById('ni-sup').value,
     custom:true}); // מסמן שזה פריט שנוסף ע"י המשתמש ולא קיים בקוד הבסיסי — כדי שישרוד רענון/סנכרון
   closeModal();renderIngredients();
@@ -3890,7 +4017,7 @@ async function sbSet(key, value) {
 async function syncToSupabase() {
   const data = {
     codeVersion: CODE_VERSION,
-    ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt})),
+    ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt,cost:i.cost??null,name:i.name,pack:i.pack,supplier:i.supplier,_userEditedName:i._userEditedName||false,_userEditedPack:i._userEditedPack||false,_userEditedSupplier:i._userEditedSupplier||false})),
     customIngredients: ingredients.filter(i=>i.custom),
     finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
     nutritionData,
@@ -3957,7 +4084,13 @@ async function loadFromSupabase() {
   if(data.ingredients) {
     data.ingredients.forEach(saved => {
       const ing = ingredients.find(i=>i.id===saved.id);
-      if(ing) { ing.qty=saved.qty; if(saved.min!==undefined&&saved.min!==null) ing.min=saved.min; applyExpiry(ing, saved); if(saved.updatedAt) ing.updatedAt=saved.updatedAt; }
+      if(ing) {
+        ing.qty=saved.qty; if(saved.min!==undefined&&saved.min!==null) ing.min=saved.min; applyExpiry(ing, saved); if(saved.updatedAt) ing.updatedAt=saved.updatedAt;
+        if(saved.cost!==undefined) ing.cost=saved.cost;
+        if(saved._userEditedName) { ing.name=saved.name; ing._userEditedName=true; }
+        if(saved._userEditedPack) { ing.pack=saved.pack; ing._userEditedPack=true; }
+        if(saved._userEditedSupplier) { ing.supplier=saved.supplier; ing._userEditedSupplier=true; }
+      }
     });
   }
   if(data.finishedGoods) {
@@ -4048,7 +4181,7 @@ function saveToStorage() {
   try {
     const data = {
       codeVersion: CODE_VERSION,
-      ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt})),
+      ingredients: ingredients.map(i=>({id:i.id,qty:i.qty,min:i.min,batches:i.batches||[],updatedAt:i.updatedAt,cost:i.cost??null,name:i.name,pack:i.pack,supplier:i.supplier,_userEditedName:i._userEditedName||false,_userEditedPack:i._userEditedPack||false,_userEditedSupplier:i._userEditedSupplier||false})),
       customIngredients: ingredients.filter(i=>i.custom),
       finishedGoods: finishedGoods.map(p=>({id:p.id,boxes:p.boxes.map(b=>({type:b.type,qty:b.qty}))})),
       dispatches: dispatches.map(d=>({id:d.id,branch:d.branch,status:d.status,order:d.order})),
@@ -4059,6 +4192,7 @@ function saveToStorage() {
       allergenHistory,
       recycledRecipes,
       deletedRecipeIds,
+      ingHistory,
       recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
         id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
         portionWeight:r.portionWeight, portionLabel:r.portionLabel,
@@ -4099,6 +4233,7 @@ function loadFromStorage() {
           // טוען רק שינויים שהמשתמש עשה ידנית
           if(saved.qty !== undefined) ing.qty = saved.qty;
           if(saved.min !== undefined && saved.min !== null) ing.min = saved.min;
+          if(saved.cost !== undefined) ing.cost = saved.cost;
           // שם ואריזה — רק אם המשתמש שינה (לא מהקוד)
           if(saved._userEditedName) ing.name = saved.name;
           if(saved._userEditedPack) ing.pack = saved.pack;
@@ -4165,6 +4300,7 @@ function loadFromStorage() {
       });
     }
     if(data.allergenHistory) allergenHistory.unshift(...data.allergenHistory);
+    if(data.ingHistory) Object.assign(ingHistory, data.ingHistory);
     if(data.recycledRecipes) recycledRecipes = data.recycledRecipes;
     if(data.deletedRecipeIds) deletedRecipeIds = data.deletedRecipeIds;
     deletedRecipeIds.forEach(id => {
