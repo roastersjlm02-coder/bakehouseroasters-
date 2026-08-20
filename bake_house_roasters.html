@@ -3447,9 +3447,11 @@ function saveRecipeFull() {
     return ta ? ta.value.trim() : '';
   }).filter(s=>s);
 
+  r._userEditedRecipe = true;
   closeModal();
   renderRecipes();
   saveToStorage();
+  syncToSupabase();
 }
 
 function saveRecipe(id) {
@@ -3768,7 +3770,7 @@ function renderNutrPreview(product, data, serving) {
 
 // ===================== LOCALSTORAGE =====================
 const LS_KEY = 'bhr-data-v1';
-const CODE_VERSION = '2026-04-25'; // עדכן כל פעם שמשנים נתוני בסיס בקוד (זהירות: הקפצה מוחקת localStorage כולל לוג ייצור!)
+const CODE_VERSION = '2026-08-20'; // עדכן כל פעם שמשנים נתוני בסיס בקוד (זהירות: הקפצה מוחקת localStorage כולל לוג ייצור!)
 
 // ===================== SUPABASE SYNC =====================
 const SB_URL = 'https://dessrkofoigdjyftffxo.supabase.co';
@@ -3804,6 +3806,12 @@ async function syncToSupabase() {
     weeklyHistory,
     ingHistory,
     recycledRecipes,
+    recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
+      id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
+      portionWeight:r.portionWeight, portionLabel:r.portionLabel,
+      dairy:r.dairy, parve:r.parve, vegan:r.vegan, glutenFree:r.glutenFree,
+      ings:r.ings, steps:r.steps, _userEditedRecipe:true
+    })),
     savedAt: new Date().toISOString()
   };
   await sbSet('main_data', data);
@@ -3825,6 +3833,25 @@ async function loadFromSupabase() {
     recycledRecipes.forEach(r => {
       const idx = recipes.findIndex(x=>x.id===r.id);
       if(idx > -1) recipes.splice(idx, 1);
+    });
+  }
+
+  if(data.recipes) {
+    data.recipes.forEach(saved => {
+      if(!saved._userEditedRecipe) return; // מתעלמים מנתונים ישנים/לא-מסומנים
+      const r = recipes.find(x=>x.id===saved.id);
+      if(r) {
+        r.name=saved.name; r.cost=saved.cost; r.price=saved.price; r.portions=saved.portions;
+        if(saved.portionWeight) r.portionWeight=saved.portionWeight;
+        if(saved.portionLabel) r.portionLabel=saved.portionLabel;
+        if(saved.dairy!==undefined) r.dairy=saved.dairy;
+        if(saved.parve!==undefined) r.parve=saved.parve;
+        if(saved.vegan!==undefined) r.vegan=saved.vegan;
+        if(saved.glutenFree!==undefined) r.glutenFree=saved.glutenFree;
+        if(saved.ings) r.ings=saved.ings;
+        if(saved.steps) r.steps=saved.steps;
+        r._userEditedRecipe = true;
+      }
     });
   }
 
@@ -3931,6 +3958,12 @@ function saveToStorage() {
       allergenData: allergenData.map(a=>({id:a.id,batch:a.batch,batchDate:a.batchDate,changed:a.changed,allergens:a.allergens,prev:a.prev})),
       allergenHistory,
       recycledRecipes,
+      recipes: recipes.filter(r=>r._userEditedRecipe).map(r=>({
+        id:r.id, name:r.name, cost:r.cost, price:r.price, portions:r.portions,
+        portionWeight:r.portionWeight, portionLabel:r.portionLabel,
+        dairy:r.dairy, parve:r.parve, vegan:r.vegan, glutenFree:r.glutenFree,
+        ings:r.ings, steps:r.steps, _userEditedRecipe:true
+      })),
       savedAt: new Date().toISOString()
     };
     localStorage.setItem(LS_KEY, JSON.stringify(data));
@@ -4002,12 +4035,10 @@ function loadFromStorage() {
     }
     if(data.recipes) {
       data.recipes.forEach(saved => {
+        if(!saved._userEditedRecipe) return; // מתעלמים מנתונים ישנים/לא-מסומנים — לא דורסים מתכוני בסיס מהקוד
         const r = recipes.find(x=>x.id===saved.id);
         if(r) {
-          if(saved._userEdited) {
-            r.name=saved.name; r.cost=saved.cost; r.price=saved.price;
-            r.portions=saved.portions;
-          }
+          r.name=saved.name; r.cost=saved.cost; r.price=saved.price; r.portions=saved.portions;
           if(saved.portionWeight) r.portionWeight=saved.portionWeight;
           if(saved.portionLabel) r.portionLabel=saved.portionLabel;
           if(saved.dairy!==undefined) r.dairy=saved.dairy;
@@ -4016,6 +4047,7 @@ function loadFromStorage() {
           if(saved.glutenFree!==undefined) r.glutenFree=saved.glutenFree;
           if(saved.ings) r.ings=saved.ings;
           if(saved.steps) r.steps=saved.steps;
+          r._userEditedRecipe = true;
         }
       });
     }
