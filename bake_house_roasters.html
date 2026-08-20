@@ -3643,11 +3643,11 @@ function updateProdStats() {
 function openModal(type){
   let h='';
   if(type==='add-ing'){h=`<h3>הוספת חומר גלם</h3>
-    <div class="form-group"><label>שם</label><input type="text" id="ni-name"></div>
-    <div class="form-group"><label>אריזה</label><input type="text" id="ni-pack"></div>
+    <div class="form-group"><label>שם</label><input type="text" id="ni-name" placeholder="לדוגמה: פרג שלם"></div>
+    <div class="form-group"><label>אריזה</label><input type="text" id="ni-pack" placeholder="לדוגמה: שקית 1 ק&quot;ג"></div>
     <div class="form-row">
-      <div class="form-group"><label>כמות</label><input type="number" id="ni-qty"></div>
-      <div class="form-group"><label>מינימום</label><input type="number" id="ni-min"></div>
+      <div class="form-group"><label>כמות</label><input type="number" id="ni-qty" placeholder="כמה שקיות/יח&#x27; יש עכשיו במלאי"></div>
+      <div class="form-group"><label>מינימום</label><input type="number" id="ni-min" placeholder="מתחת לכמה שקיות/יח&#x27; להזמין מחדש"></div>
     </div>
     <div class="form-group"><label>ספק</label><select id="ni-sup">${suppliers.map(s=>`<option>${s.name}</option>`).join('')}</select></div>
     <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">ביטול</button><button class="btn btn-primary" onclick="saveNewIng()">הוסף</button></div>`;}
